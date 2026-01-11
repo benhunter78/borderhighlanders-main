@@ -20,7 +20,7 @@
 
         /* Navigation */
         nav {
-            background-color: #1a472a;
+            background-color: #557a60;
             padding: 1rem 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: sticky;
@@ -46,19 +46,19 @@
         }
 
         nav a:hover {
-            color: #c9a961;
+            color: #F1B300;
         }
 
         nav a.active {
-            color: #c9a961;
-            border-bottom: 2px solid #c9a961;
+            color: #F1B300;
+            border-bottom: 2px solid #F1B300;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #1a472a 0%, #2d5f3f 100%);
+            background-color: #557a60;
             color: white;
-            padding: 3rem 2rem;
+            padding: 2rem 2rem;
             text-align: center;
         }
 
@@ -70,35 +70,102 @@
 
         /* Main Content */
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 3rem 2rem;
         }
 
-        .content-section {
+        .contact-form {
             background: white;
             padding: 3rem;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
             margin-bottom: 2rem;
         }
 
-        .content-section h2 {
-            color: #1a472a;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #557a60;
         }
 
-        .content-section p {
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #557a60;
+        }
+
+        .radio-option label {
+            margin: 0;
+            font-weight: normal;
+            color: #333;
+            cursor: pointer;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #557a60;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background-color: #557a60;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
             font-size: 1.1rem;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #446350;
+        }
+
+        .required {
+            color: #874434;
         }
 
         /* Footer */
         footer {
-            background-color: #1a472a;
+            background-color: #557a60;
             color: white;
             text-align: center;
             padding: 2rem;
@@ -124,7 +191,7 @@
                 font-size: 0.9rem;
             }
 
-            .content-section {
+            .contact-form {
                 padding: 1.5rem;
             }
         }
@@ -148,19 +215,47 @@
     </div>
 
     <div class="container">
-        <div class="content-section">
-            <h2>Get In Touch</h2>
-            <p>Content coming soon...</p>
-        </div>
+        <div class="contact-form">
+            <form action="https://formspree.io/f/borderhighlanders@gmail.com" method="POST">
+                <div class="form-group">
+                    <label>Type of Inquiry <span class="required">*</span></label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="performance" name="inquiry_type" value="I'd like a band or soloist to perform" required>
+                            <label for="performance">I'd like a band or soloist to perform</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="learn" name="inquiry_type" value="I'm interested in learning to play" required>
+                            <label for="learn">I'm interested in learning to play</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="join" name="inquiry_type" value="I'm interested in joining the band" required>
+                            <label for="join">I'm interested in joining the band</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="other" name="inquiry_type" value="Other inquiry" required>
+                            <label for="other">Other inquiry</label>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="content-section">
-            <h2>Performance Inquiries</h2>
-            <p>Content coming soon...</p>
-        </div>
+                <div class="form-group">
+                    <label for="name">Your Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required>
+                </div>
 
-        <div class="content-section">
-            <h2>Location</h2>
-            <p>Content coming soon...</p>
+                <div class="form-group">
+                    <label for="email">Your Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message <span class="required">*</span></label>
+                    <textarea id="message" name="message" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
         </div>
     </div>
 
@@ -168,5 +263,23 @@
         <p>&copy; 2026 Border Highlanders Pipes & Drums</p>
         <p>Scottish Highland piping and drumming on the Palouse since 1974</p>
     </footer>
+
+    <script>
+        // Update form subject based on selected inquiry type
+        document.querySelectorAll('input[name="inquiry_type"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const form = document.querySelector('form');
+                // Add hidden _subject field for Formspree
+                let subjectInput = form.querySelector('input[name="_subject"]');
+                if (!subjectInput) {
+                    subjectInput = document.createElement('input');
+                    subjectInput.type = 'hidden';
+                    subjectInput.name = '_subject';
+                    form.appendChild(subjectInput);
+                }
+                subjectInput.value = this.value;
+            });
+        });
+    </script>
 </body>
 </html>
