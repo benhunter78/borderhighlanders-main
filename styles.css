@@ -1,0 +1,522 @@
+/* Reset Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+/* Page-specific backgrounds */
+body.page-join {
+    background-image: url('images/portrait');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+body.page-contact {
+    background-image: url('images/lentil.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+body.page-calendar {
+    background-image: url('images/hunga.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+body.page-burns {
+    background-image: url('images/burns.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Background overlay for pages with fixed images */
+body.page-join::before,
+body.page-contact::before,
+body.page-calendar::before,
+body.page-burns::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(245, 245, 245, 0.90);
+    z-index: -1;
+}
+
+body.page-join::before {
+    background-color: rgba(245, 245, 245, 0.85);
+}
+
+/* Navigation */
+nav {
+    background-color: #557a60;
+    background-image:
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.03) 10px,
+            rgba(0, 0, 0, 0.03) 20px
+        );
+    padding: 1rem 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding: 0 2rem;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+}
+
+nav a:hover {
+    color: #F1B300;
+}
+
+nav a.active {
+    color: #F1B300;
+    border-bottom: 2px solid #F1B300;
+}
+
+/* Hero Section */
+.hero {
+    background-color: #557a60;
+    background-image:
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.03) 10px,
+            rgba(0, 0, 0, 0.03) 20px
+        );
+    color: white;
+    padding: 2rem 2rem;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Homepage specific hero styles */
+body.page-home .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.hero .tagline {
+    font-size: 1.3rem;
+    font-style: italic;
+    color: #F1B300;
+    margin-bottom: 2rem;
+}
+
+/* Main Content */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+body.page-contact .container {
+    max-width: 800px;
+}
+
+body.page-join .container,
+body.page-burns .container {
+    max-width: 1000px;
+}
+
+.content-section {
+    background: white;
+    padding: 3rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+body.page-join .content-section,
+body.page-burns .content-section {
+    padding: 2.5rem;
+}
+
+.content-section h2 {
+    color: #1a472a;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+body.page-join .content-section h2,
+body.page-burns .content-section h2 {
+    color: #557a60;
+    margin-bottom: 1.5rem;
+    border-bottom: 3px solid #F1B300;
+    padding-bottom: 0.5rem;
+}
+
+.content-section h3 {
+    color: #557a60;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
+.content-section h4 {
+    color: #557a60;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+.content-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+body.page-join .content-section p,
+body.page-burns .content-section p {
+    font-size: 1.05rem;
+}
+
+.content-section ul {
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.content-section li {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 0.75rem;
+}
+
+/* Homepage specific styles */
+body.page-home .content-section {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+
+.image-container {
+    position: relative;
+    width: 100vw;
+    height: 500px;
+    margin: 0;
+    margin-left: calc(-50vw + 50%);
+    overflow: hidden;
+}
+
+.slideshow {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.slideshow img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.slideshow img.active {
+    opacity: 1;
+}
+
+.welcome-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #808080;
+    text-align: center;
+    margin: 3rem auto;
+    max-width: 1200px;
+    padding: 0 2rem;
+}
+
+.highlight-box {
+    background-color: #874434;
+    color: white;
+    padding: 3rem 2rem;
+    margin: 0;
+    text-align: center;
+}
+
+.highlight-box h2 {
+    margin-bottom: 1rem;
+}
+
+/* Join page specific styles */
+.intro-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+.intro-text a {
+    color: #557a60;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 2px solid #F1B300;
+}
+
+.intro-text a:hover {
+    color: #F1B300;
+}
+
+.note {
+    background-color: #f9f9f9;
+    border-left: 4px solid #F1B300;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #666;
+}
+
+/* Burns Night specific styles */
+.event-highlight {
+    background-color: #557a60;
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.event-highlight h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #F1B300;
+}
+
+.event-highlight p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+}
+
+.sold-out {
+    background-color: #874434;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 1.5rem 0;
+}
+
+/* Contact form styles */
+.contact-form {
+    background: white;
+    padding: 3rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #557a60;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.radio-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #557a60;
+}
+
+.radio-option label {
+    margin: 0;
+    font-weight: normal;
+    color: #333;
+    cursor: pointer;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #557a60;
+}
+
+textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.submit-btn {
+    background-color: #557a60;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background-color: #446350;
+}
+
+.required {
+    color: #874434;
+}
+
+/* Calendar page styles */
+.calendar-container {
+    position: relative;
+    padding-bottom: 75%;
+    height: 0;
+    overflow: hidden;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.calendar-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Footer */
+footer {
+    background-color: #557a60;
+    background-image:
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.03) 10px,
+            rgba(0, 0, 0, 0.03) 20px
+        );
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    margin-top: 3rem;
+}
+
+footer p {
+    margin: 0.5rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    body.page-home .hero h1 {
+        font-size: 2rem;
+    }
+
+    nav ul {
+        gap: 1rem;
+    }
+
+    nav a {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .content-section {
+        padding: 1.5rem;
+    }
+
+    .contact-form {
+        padding: 1.5rem;
+    }
+
+    .event-highlight h2 {
+        font-size: 1.5rem;
+    }
+
+    .event-highlight p {
+        font-size: 1rem;
+    }
+
+    body.page-join .content-section h2 {
+        font-size: 1.5rem;
+    }
+
+    body.page-join .content-section h3 {
+        font-size: 1.2rem;
+    }
+}
