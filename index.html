@@ -93,13 +93,35 @@
         .image-container {
             text-align: center;
             margin: 2rem 0;
+            position: relative;
+            width: 100%;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .image-container img {
+        .slideshow {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slideshow img {
+            position: absolute;
             max-width: 100%;
             height: auto;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slideshow img.active {
+            opacity: 1;
         }
 
         .welcome-text {
@@ -182,7 +204,9 @@
     <div class="container">
         <div class="content-section">
             <div class="image-container">
-                <img src="images/portrait" alt="Border Highlanders Pipes & Drums">
+                <div class="slideshow" id="slideshow">
+                    <!-- Images will be dynamically inserted here by JavaScript -->
+                </div>
             </div>
 
             <p class="welcome-text">
@@ -203,5 +227,65 @@
         <p>&copy; 2026 Border Highlanders Pipes & Drums</p>
         <p>Scottish Highland piping and drumming on the Palouse since 1974</p>
     </footer>
+
+    <script>
+        // Image slideshow with random progression
+        // TO ADD MORE IMAGES: Simply add the filename to this array
+        const images = [
+            'images/portrait',
+            // Add your new images here, for example:
+            // 'images/image1.jpg',
+            // 'images/image2.jpg',
+            // 'images/image3.jpg',
+        ];
+
+        // Shuffle array randomly (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Initialize slideshow
+        function initSlideshow() {
+            const slideshowContainer = document.getElementById('slideshow');
+            const shuffledImages = shuffleArray(images);
+
+            // Create img elements for all images
+            shuffledImages.forEach((src, index) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = 'Border Highlanders Pipes & Drums';
+                if (index === 0) {
+                    img.classList.add('active');
+                }
+                slideshowContainer.appendChild(img);
+            });
+
+            // Start the slideshow rotation
+            let currentIndex = 0;
+            const imgElements = slideshowContainer.querySelectorAll('img');
+
+            // Only run slideshow if there's more than one image
+            if (imgElements.length > 1) {
+                setInterval(() => {
+                    // Remove active class from current image
+                    imgElements[currentIndex].classList.remove('active');
+
+                    // Move to next image (loop back to start when at end)
+                    currentIndex = (currentIndex + 1) % imgElements.length;
+
+                    // Add active class to new current image
+                    imgElements[currentIndex].classList.add('active');
+                }, 2000); // 1 second fade + 1 second hold = 2000ms total
+            }
+        }
+
+        // Start slideshow when page loads
+        document.addEventListener('DOMContentLoaded', initSlideshow);
+    </script>
 </body>
 </html>
