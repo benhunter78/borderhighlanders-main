@@ -20,7 +20,7 @@
 
         /* Navigation */
         nav {
-            background-color: #1a472a;
+            background-color: #557a60;
             padding: 1rem 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: sticky;
@@ -46,19 +46,19 @@
         }
 
         nav a:hover {
-            color: #c9a961;
+            color: #F1B300;
         }
 
         nav a.active {
-            color: #c9a961;
-            border-bottom: 2px solid #c9a961;
+            color: #F1B300;
+            border-bottom: 2px solid #F1B300;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #1a472a 0%, #2d5f3f 100%);
+            background-color: #557a60;
             color: white;
-            padding: 3rem 2rem;
+            padding: 2rem 2rem;
             text-align: center;
         }
 
@@ -75,30 +75,34 @@
             padding: 3rem 2rem;
         }
 
-        .content-section {
+        .calendar-container {
             background: white;
-            padding: 3rem;
+            padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
 
-        .content-section h2 {
-            color: #1a472a;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
+        .calendar-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            height: 0;
+            overflow: hidden;
         }
 
-        .content-section p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 1rem;
+        .calendar-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
 
         /* Footer */
         footer {
-            background-color: #1a472a;
+            background-color: #557a60;
             color: white;
             text-align: center;
             padding: 2rem;
@@ -124,8 +128,12 @@
                 font-size: 0.9rem;
             }
 
-            .content-section {
-                padding: 1.5rem;
+            .calendar-container {
+                padding: 1rem;
+            }
+
+            .calendar-embed {
+                padding-bottom: 100%; /* More square on mobile */
             }
         }
     </style>
@@ -148,19 +156,10 @@
     </div>
 
     <div class="container">
-        <div class="content-section">
-            <h2>Upcoming Events</h2>
-            <p>Content coming soon...</p>
-        </div>
-
-        <div class="content-section">
-            <h2>Performances</h2>
-            <p>Content coming soon...</p>
-        </div>
-
-        <div class="content-section">
-            <h2>Practice Schedule</h2>
-            <p>Content coming soon...</p>
+        <div class="calendar-container">
+            <div class="calendar-embed">
+                <iframe src="https://calendar.google.com/calendar/embed?src=ouoharbh0blj995hi71nio95tg%40group.calendar.google.com&ctz=America%2FLos_Angeles" frameborder="0" scrolling="no"></iframe>
+            </div>
         </div>
     </div>
 
