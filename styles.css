@@ -365,6 +365,12 @@ body.page-home .content-section {
 }
 
 /* About page history images */
+.history-section {
+    clear: both;
+    margin-bottom: 3rem;
+    overflow: hidden;
+}
+
 .history-image-left {
     float: left;
     max-width: 300px;
@@ -407,6 +413,25 @@ body.page-home .content-section {
     margin: 2rem auto;
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Slide-in animations */
+.slide-in-left {
+    opacity: 0;
+    transform: translateX(-100px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.slide-in-right {
+    opacity: 0;
+    transform: translateX(100px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.slide-in-left.visible,
+.slide-in-right.visible {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .vandal-tartan-link {

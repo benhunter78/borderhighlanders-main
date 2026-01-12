@@ -8,6 +8,24 @@ document.addEventListener('DOMContentLoaded', function() {
         vandalizeLink.textContent = "I'm going green!";
     }
 
+    // Function to update the final image on the about page
+    function updateFinalImage() {
+        const finalImage = document.getElementById('final-image');
+        if (finalImage) {
+            const currentlyVandalized = document.body.classList.contains('vandalized');
+            if (currentlyVandalized) {
+                finalImage.src = 'images/homecoming.jpg';
+                finalImage.alt = 'Band in Vandal tartan at homecoming';
+            } else {
+                finalImage.src = 'images/portrait.jpg';
+                finalImage.alt = 'Band portrait';
+            }
+        }
+    }
+
+    // Update final image on page load
+    updateFinalImage();
+
     // Function to toggle vandalized state
     function toggleVandalize() {
         const currentlyVandalized = document.body.classList.contains('vandalized');
@@ -23,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
             vandalizeLink.textContent = "I'm going green!";
             localStorage.setItem('vandalized', 'true');
         }
+
+        // Update the final image after toggling
+        updateFinalImage();
     }
 
     // Add click event listener to main vandalize link
@@ -69,4 +90,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 3100);
         });
     }
+
+    // Scroll animation for about page images
+    const observerOptions = {
+        threshold: 0.2,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Observe all slide-in images
+    document.querySelectorAll('.slide-in-left, .slide-in-right').forEach(img => {
+        observer.observe(img);
+    });
 });
