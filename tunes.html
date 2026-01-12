@@ -28,7 +28,19 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="password-prompt" id="password-prompt">
+        <div class="container">
+            <h2>This page is password protected</h2>
+            <p>Please enter the password to access the tune repertoire.</p>
+            <form class="password-form" id="password-form">
+                <input type="password" id="password-input" placeholder="Enter password" autocomplete="off">
+                <button type="submit">Access Tunes</button>
+                <p class="password-error" id="password-error" style="display: none;">Incorrect password. Please try again.</p>
+            </form>
+        </div>
+    </div>
+
+    <div class="container tunes-protected" id="tunes-content">
         <div class="tunes-section">
             <h3>Scotland the Brave / Rowan Tree</h3>
             <table class="tunes-table">
@@ -439,5 +451,70 @@
         <a href="#" id="vandalize-link" class="vandalize-link">Vandalize this page!</a>
     </footer>
     <script src="script.js"></script>
+    <script>
+        // Tunes page password protection
+        (function() {
+            const CORRECT_PASSWORD = 'MoscowPullman';
+            const AUTH_KEY = 'tunesAuth';
+            const EXPIRY_DAYS = 30;
+
+            function checkAuth() {
+                const authData = localStorage.getItem(AUTH_KEY);
+                if (!authData) return false;
+
+                try {
+                    const { timestamp } = JSON.parse(authData);
+                    const now = new Date().getTime();
+                    const thirtyDays = EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+
+                    if (now - timestamp < thirtyDays) {
+                        return true;
+                    } else {
+                        localStorage.removeItem(AUTH_KEY);
+                        return false;
+                    }
+                } catch (e) {
+                    localStorage.removeItem(AUTH_KEY);
+                    return false;
+                }
+            }
+
+            function unlockPage() {
+                document.getElementById('password-prompt').style.display = 'none';
+                document.getElementById('tunes-content').classList.add('unlocked');
+
+                // Store authentication with timestamp
+                const authData = {
+                    timestamp: new Date().getTime()
+                };
+                localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
+            }
+
+            function showError() {
+                document.getElementById('password-error').style.display = 'block';
+                document.getElementById('password-input').value = '';
+                document.getElementById('password-input').focus();
+            }
+
+            // Check if already authenticated on page load
+            if (checkAuth()) {
+                unlockPage();
+            } else {
+                document.getElementById('password-input').focus();
+            }
+
+            // Handle form submission
+            document.getElementById('password-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const password = document.getElementById('password-input').value;
+
+                if (password === CORRECT_PASSWORD) {
+                    unlockPage();
+                } else {
+                    showError();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
