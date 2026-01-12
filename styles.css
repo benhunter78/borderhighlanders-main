@@ -30,7 +30,6 @@ body {
 /* Page-specific backgrounds */
 body.page-join {
     background-image: url('images/portrait');
-    background-attachment: fixed;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -38,7 +37,6 @@ body.page-join {
 
 body.page-contact {
     background-image: url('images/lentil.jpg');
-    background-attachment: fixed;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -46,7 +44,6 @@ body.page-contact {
 
 body.page-calendar {
     background-image: url('images/hunga.jpg');
-    background-attachment: fixed;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -54,10 +51,28 @@ body.page-calendar {
 
 body.page-burns {
     background-image: url('images/burns.jpg');
-    background-attachment: fixed;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+}
+
+/* Use fixed only on non-iOS/Safari browsers */
+@supports (-webkit-overflow-scrolling: touch) {
+    body.page-join,
+    body.page-contact,
+    body.page-calendar,
+    body.page-burns {
+        background-attachment: scroll;
+    }
+}
+
+@supports not (-webkit-overflow-scrolling: touch) {
+    body.page-join,
+    body.page-contact,
+    body.page-calendar,
+    body.page-burns {
+        background-attachment: fixed;
+    }
 }
 
 /* Background overlay for pages with fixed images */
