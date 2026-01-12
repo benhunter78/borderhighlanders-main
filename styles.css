@@ -43,26 +43,44 @@ body.page-contact {
     background-repeat: no-repeat;
 }
 
-/* body.page-calendar and body.page-burns background images removed - image files don't exist */
+body.page-calendar {
+    background-image: url('images/hunga.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+body.page-burns {
+    background-image: url('images/burns.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
 /* Use fixed only on non-iOS/Safari browsers */
 @supports (-webkit-overflow-scrolling: touch) {
     body.page-join,
-    body.page-contact {
+    body.page-contact,
+    body.page-calendar,
+    body.page-burns {
         background-attachment: scroll;
     }
 }
 
 @supports not (-webkit-overflow-scrolling: touch) {
     body.page-join,
-    body.page-contact {
+    body.page-contact,
+    body.page-calendar,
+    body.page-burns {
         background-attachment: fixed;
     }
 }
 
 /* Background overlay for pages with fixed images */
 body.page-join::before,
-body.page-contact::before {
+body.page-contact::before,
+body.page-calendar::before,
+body.page-burns::before {
     content: '';
     position: fixed;
     top: 0;
