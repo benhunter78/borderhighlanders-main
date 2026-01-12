@@ -36,11 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
             skeleton.src = 'images/skeletonBagpipe.png';
             skeleton.style.position = 'fixed';
             skeleton.style.top = '20px';
-            skeleton.style.left = '-100px';
-            skeleton.style.height = '80px';
+            skeleton.style.left = '-300px';
+            skeleton.style.height = '240px';
             skeleton.style.width = 'auto';
             skeleton.style.zIndex = '1000';
-            skeleton.style.transition = 'left 1s linear';
+            skeleton.style.transition = 'left 3s linear';
             skeleton.style.pointerEvents = 'none';
 
             document.body.appendChild(skeleton);
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove the skeleton after animation completes
             setTimeout(() => {
                 skeleton.remove();
-            }, 1100);
+            }, 3100);
         });
     }
 });
