@@ -364,6 +364,63 @@ body.page-home .content-section {
     color: var(--text-color);
 }
 
+/* About page history images */
+.history-image-left {
+    float: left;
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    margin: 0 1.5rem 1rem 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.history-image-right {
+    float: right;
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    margin: 0 0 1rem 1.5rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.history-image-right-container {
+    float: right;
+    max-width: 300px;
+    margin: 0 0 1rem 1.5rem;
+}
+
+.image-caption {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #666;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.history-image-full {
+    display: block;
+    max-width: 800px;
+    width: 100%;
+    height: auto;
+    margin: 2rem auto;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.vandal-tartan-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 2px solid var(--accent-color);
+    cursor: pointer;
+}
+
+.vandal-tartan-link:hover {
+    color: var(--accent-color);
+}
+
 /* Burns Night specific styles */
 .event-highlight {
     background-color: var(--primary-color);
@@ -761,5 +818,18 @@ footer {
 
     body.page-join .content-section h3 {
         font-size: 1.2rem;
+    }
+
+    .history-image-left,
+    .history-image-right,
+    .history-image-right-container {
+        float: none;
+        max-width: 100%;
+        margin: 1rem auto;
+        display: block;
+    }
+
+    .history-image-full {
+        margin: 1rem auto;
     }
 }

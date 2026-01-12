@@ -8,10 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
         vandalizeLink.textContent = "I'm going green!";
     }
 
-    // Add click event listener
-    vandalizeLink.addEventListener('click', function(e) {
-        e.preventDefault();
-
+    // Function to toggle vandalized state
+    function toggleVandalize() {
         const currentlyVandalized = document.body.classList.contains('vandalized');
 
         if (currentlyVandalized) {
@@ -25,7 +23,22 @@ document.addEventListener('DOMContentLoaded', function() {
             vandalizeLink.textContent = "I'm going green!";
             localStorage.setItem('vandalized', 'true');
         }
+    }
+
+    // Add click event listener to main vandalize link
+    vandalizeLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        toggleVandalize();
     });
+
+    // Add click event listener to vandal tartan link (About page)
+    const vandalTartanLink = document.getElementById('vandal-tartan-link');
+    if (vandalTartanLink) {
+        vandalTartanLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleVandalize();
+        });
+    }
 
     // Skeleton bagpipe animation on logo click
     const heroLogo = document.querySelector('.hero-logo');
