@@ -2,12 +2,14 @@
 :root {
     --primary-color: #557a60;
     --accent-color: #F1B300;
+    --highlight-color: #874434;
     --text-color: #333;
 }
 
 body.vandalized {
     --primary-color: #F1B300;
     --accent-color: #808080;
+    --highlight-color: #808080;
 }
 
 /* Reset Styles */
@@ -306,7 +308,7 @@ body.page-home .content-section {
 }
 
 .highlight-box {
-    background-color: #874434;
+    background-color: var(--highlight-color);
     color: white;
     padding: 3rem 2rem;
     margin: 0;
@@ -367,7 +369,7 @@ body.page-home .content-section {
 }
 
 .sold-out {
-    background-color: #874434;
+    background-color: var(--highlight-color);
     color: white;
     padding: 1.5rem;
     border-radius: 10px;
@@ -463,7 +465,7 @@ textarea {
 }
 
 .required {
-    color: #874434;
+    color: var(--highlight-color);
 }
 
 /* Calendar page styles */
