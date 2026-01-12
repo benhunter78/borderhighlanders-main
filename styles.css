@@ -2,7 +2,7 @@
 :root {
     --primary-color: #557a60;
     --accent-color: #F1B300;
-    --highlight-color: #874434;
+    --highlight-color: #808080;
     --text-color: #333;
 }
 
@@ -10,6 +10,7 @@ body.vandalized {
     --primary-color: #F1B300;
     --accent-color: #808080;
     --highlight-color: #808080;
+    --text-color: #000;
 }
 
 /* Reset Styles */
@@ -504,21 +505,6 @@ textarea {
     border: 0;
 }
 
-/* Footer Skeletons */
-.footer-skeletons {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2rem 4rem;
-    background-color: #f5f5f5;
-}
-
-.footer-skeletons img {
-    height: 80px;
-    width: auto;
-    opacity: 0.7;
-}
-
 /* Footer */
 footer {
     background-color: var(--primary-color);
@@ -533,7 +519,7 @@ footer {
     color: white;
     text-align: center;
     padding: 2rem;
-    margin-top: 0;
+    margin-top: 3rem;
 }
 
 footer p {
