@@ -30,7 +30,7 @@ body {
 
 /* Page-specific backgrounds */
 body.page-join {
-    background-image: url('images/portrait');
+    background-image: url('images/portrait.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
