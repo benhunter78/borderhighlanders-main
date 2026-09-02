@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Border Highlanders tune survey, August 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf9f6; --surface:#ffffff; --surface-2:#f2f0ea;
+  --ink:#16150f; --ink-2:#57544a; --ink-3:#8a877c;
+  --line:#e2dfd4; --line-2:#cbc7b8;
+  --pos:#2a6fb0; --neg:#c04a44; --neutral:#8a877c;
+  --accent:#3d6b4a; --accent-soft:#e8efe8;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16150f; --surface:#1e1d17; --surface-2:#26251d;
+    --ink:#f0eee4; --ink-2:#b8b4a6; --ink-3:#8a877c;
+    --line:#33322a; --line-2:#454338;
+    --pos:#5b9bd8; --neg:#e0736c; --neutral:#8a877c;
+    --accent:#8fbf9c; --accent-soft:#222c24;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16150f; --surface:#1e1d17; --surface-2:#26251d;
+  --ink:#f0eee4; --ink-2:#b8b4a6; --ink-3:#8a877c;
+  --line:#33322a; --line-2:#454338;
+  --pos:#5b9bd8; --neg:#e0736c; --neutral:#8a877c;
+  --accent:#8fbf9c; --accent-soft:#222c24;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:860px;margin:0 auto;padding:32px 20px 64px}
+header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:24px}
+h1{font-size:26px;font-weight:600;margin:0 0 6px;letter-spacing:-0.01em}
+.sub{color:var(--ink-2);font-size:15px;margin:0}
+h2{font-size:19px;font-weight:600;margin:36px 0 4px;letter-spacing:-0.01em}
+h3{font-size:16px;font-weight:600;margin:22px 0 6px}
+p{margin:0 0 12px;color:var(--ink-2)}
+p.lead{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:20px 0 8px}
+.stat{background:var(--surface-2);border-radius:var(--radius);padding:12px 14px}
+.stat .n{font-size:24px;font-weight:600;line-height:1.2}
+.stat .l{font-size:12px;color:var(--ink-3);text-transform:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 0}
+.tabs{display:flex;gap:6px;margin:24px 0 4px;flex-wrap:wrap}
+.tab{background:transparent;border:1px solid var(--line-2);color:var(--ink-2);
+  padding:7px 15px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer}
+.tab:hover{background:var(--surface-2)}
+.tab[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.chip{background:transparent;border:1px solid var(--line);color:var(--ink-2);
+  padding:5px 11px;border-radius:999px;font:inherit;font-size:13px;cursor:pointer}
+.chip:hover{background:var(--surface-2)}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:500}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-3);margin:0 0 10px;align-items:center}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:2px;display:inline-block}
+.bar-line{width:16px;border-top:2px solid var(--neutral);display:inline-block}
+.chartbox{position:relative;width:100%}
+.tablewrap{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--ink-3);font-weight:500;font-size:12px;white-space:nowrap;
+  border-bottom:1px solid var(--line-2);cursor:pointer;user-select:none}
+th:hover{color:var(--ink)}
+tbody tr.dim{opacity:.32}
+td.tune{font-weight:500;color:var(--ink)}
+.mini{display:flex;height:9px;border-radius:2px;overflow:hidden;min-width:90px;background:var(--surface-2)}
+.mini i{display:block;height:100%}
+.note{font-size:14px;color:var(--ink-3);border-left:2px solid var(--line-2);padding-left:12px;margin:16px 0}
+ul{margin:0 0 12px;padding-left:20px;color:var(--ink-2)}
+li{margin-bottom:7px}
+.hide{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-3)}
+@media (max-width:560px){h1{font-size:22px}.wrap{padding:24px 14px 48px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Border Highlanders tune survey</h1>
+  <p class="sub">Results from the repertoire survey, fielded 30 August 2026</p>
+</header>
+
+<p class="lead">Thanks to everyone who filled this out. The survey asked two things: sort all 19 tunes into four buckets from "hold onto this" to "would be happy if we stopped," and then rank the 9 sets from highest to lowest priority to keep. Both views are below, along with what they add up to.</p>
+
+<div class="stats">
+  <div class="stat"><div class="n">14</div><div class="l">responses</div></div>
+  <div class="stat"><div class="n">19</div><div class="l">tunes rated</div></div>
+  <div class="stat"><div class="n">9</div><div class="l">sets ranked</div></div>
+</div>
+
+<h2>The results</h2>
+<div class="tabs" role="tablist">
+  <button class="tab" id="tab-tunes" role="tab" aria-selected="true" aria-controls="panel-tunes">By tune</button>
+  <button class="tab" id="tab-sets" role="tab" aria-selected="false" aria-controls="panel-sets">By set</button>
+</div>
+
+<div id="panel-tunes" role="tabpanel" aria-labelledby="tab-tunes">
+  <p>Each tune scores +2 if you wanted to hold onto it, +1 keep, -1 tired of it, -2 stop playing it. The bar is the average across the band. The line through it is one standard deviation, which shows how much we disagreed: a short line means we mostly said the same thing, a long line means the band is split.</p>
+  <div class="chips" id="setFilter">
+    <button class="chip" data-set="all" aria-pressed="true">All tunes</button>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--pos)"></i>Net keep</span>
+    <span><i class="sw" style="background:var(--neg)"></i>Net sunset</span>
+    <span><i class="bar-line"></i>±1 SD (how split we were)</span>
+  </div>
+  <div class="chartbox" id="tuneBox" style="height:760px">
+    <canvas id="tuneChart" role="img" aria-label="Average sentiment score for each of 19 tunes with standard deviation error bars"></canvas>
+  </div>
+
+  <h3>Full breakdown</h3>
+  <p>Click any column heading to sort. Bar segments show how many people put the tune in each bucket.</p>
+  <div class="tablewrap">
+    <table id="tuneTable">
+      <thead><tr>
+        <th data-sort="name">Tune</th>
+        <th data-sort="set">Set</th>
+        <th data-sort="mean">Avg</th>
+        <th data-sort="sd">SD</th>
+        <th data-sort="hold">Hold</th>
+        <th data-sort="keep">Keep</th>
+        <th data-sort="tired">Tired</th>
+        <th data-sort="stop">Stop</th>
+        <th>Split</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="panel-sets" class="hide" role="tabpanel" aria-labelledby="tab-sets">
+  <p>Everyone ranked the 9 sets from 1 (highest priority to keep) to 9 (lowest priority, most likely to be retired). Bars run left to right from most protected to most expendable. The line through each bar is again one standard deviation.</p>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--pos)"></i>Ranked in the keep half</span>
+    <span><i class="sw" style="background:var(--neg)"></i>Ranked in the retire half</span>
+    <span><i class="bar-line"></i>±1 SD</span>
+  </div>
+  <div class="chartbox" id="setBox" style="height:440px">
+    <canvas id="setChart" role="img" aria-label="Average keep-priority rank for each of 9 sets with standard deviation error bars"></canvas>
+  </div>
+  <div class="tablewrap">
+    <table id="setTable">
+      <thead><tr>
+        <th>Set</th><th>Tunes</th><th>Avg rank</th><th>SD</th><th>Top 3 votes</th><th>Bottom 3 votes</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Survey run in Qualtrics, 30 August 2026. Questions or corrections, get in touch.</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var SETS = {
+  "sr":   {name:"Scotland the Brave/Rowantree", mean:3.50, sd:2.35, top3:8,  bot3:1,  tunes:["Scotland the Brave","Rowantree"]},
+  "m44":  {name:"4/4 march set",                mean:5.07, sd:2.23, top3:4,  bot3:5,  tunes:["Wings","We're No Awa'","Bonnie Hoose of Airlie"]},
+  "m34":  {name:"3/4 march set",                mean:7.21, sd:1.81, top3:0,  bot3:10, tunes:["Castle Dangerous","Schiehallion"]},
+  "hc":   {name:"Highland Cathedral",           mean:7.29, sd:1.90, top3:1,  bot3:11, tunes:["Highland Cathedral"]},
+  "n98":  {name:"9/8 set",                      mean:5.00, sd:2.29, top3:4,  bot3:4,  tunes:["Black Isle","Heather Grant"]},
+  "c24":  {name:"Competition 2/4 set",          mean:5.86, sd:2.14, top3:2,  bot3:5,  tunes:["Drunken Piper","Jenny's Nickel","Men of Argyll","Inverness Gathering"]},
+  "jigs": {name:"Jigs",                         mean:4.93, sd:2.30, top3:4,  bot3:3,  tunes:["The Duck","The What of the Who"]},
+  "ask":  {name:"Banks/Leaving Port Askaig",    mean:3.43, sd:2.44, top3:9,  bot3:2,  tunes:["Banks of Askaig","Leaving Port Askaig"]},
+  "dle":  {name:"Dan's Left Ear",               mean:2.71, sd:1.94, top3:10, bot3:1,  tunes:["Dan's Left Ear"]}
+};
+var TUNES = [
+  {name:"Dan's Left Ear",        mean:1.86, sd:0.36, hold:12, keep:2, tired:0, stop:0, set:"dle"},
+  {name:"Scotland the Brave",    mean:1.62, sd:0.87, hold:10, keep:2, tired:1, stop:0, set:"sr"},
+  {name:"Rowantree",             mean:1.46, sd:0.88, hold:8,  keep:4, tired:1, stop:0, set:"sr"},
+  {name:"Banks of Askaig",       mean:1.36, sd:0.84, hold:7,  keep:6, tired:1, stop:0, set:"ask"},
+  {name:"Leaving Port Askaig",   mean:1.36, sd:0.84, hold:7,  keep:6, tired:1, stop:0, set:"ask"},
+  {name:"Bonnie Hoose of Airlie",mean:0.77, sd:1.09, hold:3,  keep:7, tired:3, stop:0, set:"m44"},
+  {name:"Black Isle",            mean:0.77, sd:1.30, hold:5,  keep:4, tired:4, stop:0, set:"n98"},
+  {name:"Wings",                 mean:0.57, sd:1.09, hold:2,  keep:8, tired:4, stop:0, set:"m44"},
+  {name:"Men of Argyll",         mean:0.54, sd:1.33, hold:2,  keep:8, tired:1, stop:2, set:"c24"},
+  {name:"The What of the Who",   mean:0.54, sd:1.51, hold:4,  keep:5, tired:2, stop:2, set:"jigs"},
+  {name:"Drunken Piper",         mean:0.36, sd:1.28, hold:1,  keep:9, tired:2, stop:2, set:"c24"},
+  {name:"Heather Grant",         mean:0.31, sd:1.49, hold:2,  keep:7, tired:1, stop:3, set:"n98"},
+  {name:"The Duck",              mean:0.21, sd:1.48, hold:3,  keep:5, tired:4, stop:2, set:"jigs"},
+  {name:"Inverness Gathering",   mean:0.14, sd:1.56, hold:3,  keep:5, tired:3, stop:3, set:"c24"},
+  {name:"Highland Cathedral",    mean:-0.21,sd:1.63, hold:3,  keep:3, tired:4, stop:4, set:"hc"},
+  {name:"Castle Dangerous",      mean:-0.36,sd:1.45, hold:1,  keep:5, tired:4, stop:4, set:"m34"},
+  {name:"Jenny's Nickel",        mean:-0.62,sd:1.39, hold:1,  keep:3, tired:5, stop:4, set:"c24"},
+  {name:"Schiehallion",          mean:-0.79,sd:1.05, hold:0,  keep:3, tired:8, stop:3, set:"m34"},
+  {name:"We're No Awa'",         mean:-0.85,sd:1.14, hold:0,  keep:3, tired:6, stop:4, set:"m44"}
+];
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function theme(){
+  return { pos:css('--pos'), neg:css('--neg'), ink:css('--ink'), ink2:css('--ink-2'),
+           ink3:css('--ink-3'), line:css('--line'), neutral:css('--neutral') };
+}
+
+function errorPlugin(getRows){
+  return {
+    id:'err',
+    afterDatasetsDraw:function(c){
+      var rows=getRows(), t=theme(), ctx=c.ctx, x=c.scales.x, y=c.scales.y;
+      ctx.save(); ctx.strokeStyle=t.neutral; ctx.lineWidth=1.5;
+      rows.forEach(function(r,i){
+        var yc=y.getPixelForValue(i);
+        var lo=x.getPixelForValue(r.mean-r.sd), hi=x.getPixelForValue(r.mean+r.sd);
+        ctx.beginPath(); ctx.moveTo(lo,yc); ctx.lineTo(hi,yc); ctx.stroke();
+        [lo,hi].forEach(function(px){ ctx.beginPath(); ctx.moveTo(px,yc-5); ctx.lineTo(px,yc+5); ctx.stroke(); });
+      });
+      ctx.restore();
+    }
+  };
+}
+
+var activeSet='all', tuneChart=null, setChart=null;
+function visibleTunes(){
+  return activeSet==='all' ? TUNES.slice() : TUNES.filter(function(t){return t.set===activeSet;});
+}
+
+function drawTunes(){
+  var rows=visibleTunes(), t=theme();
+  document.getElementById('tuneBox').style.height = Math.max(200, rows.length*36+80)+'px';
+  if(tuneChart) tuneChart.destroy();
+  tuneChart = new Chart(document.getElementById('tuneChart'), {
+    type:'bar',
+    data:{ labels:rows.map(function(r){return r.name;}),
+      datasets:[{ data:rows.map(function(r){return r.mean;}),
+        backgroundColor:rows.map(function(r){return r.mean>=0?t.pos:t.neg;}),
+        borderRadius:4, barThickness:15 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false,
+      scales:{
+        x:{min:-2.6,max:2.6,grid:{color:t.line},border:{display:false},
+           ticks:{color:t.ink3,stepSize:1,font:{size:12}},
+           title:{display:true,color:t.ink3,font:{size:12},
+             text:'hold (+2)   keep (+1)   tired (-1)   stop (-2)'}},
+        y:{grid:{display:false},border:{display:false},
+           ticks:{color:t.ink2,autoSkip:false,font:{size:12}}}
+      },
+      plugins:{ legend:{display:false},
+        tooltip:{callbacks:{label:function(c){var r=rows[c.dataIndex];
+          return ['Average '+r.mean.toFixed(2)+'   SD '+r.sd.toFixed(2),
+                  'hold '+r.hold+'  keep '+r.keep+'  tired '+r.tired+'  stop '+r.stop];}}}
+      }},
+    plugins:[errorPlugin(visibleTunes)]
+  });
+}
+
+function setRows(){
+  return Object.keys(SETS).map(function(k){
+    return {key:k,name:SETS[k].name,mean:SETS[k].mean,sd:SETS[k].sd,top3:SETS[k].top3,bot3:SETS[k].bot3};
+  }).sort(function(a,b){return a.mean-b.mean;});
+}
+
+function drawSets(){
+  var rows=setRows(), t=theme();
+  if(setChart) setChart.destroy();
+  setChart = new Chart(document.getElementById('setChart'), {
+    type:'bar',
+    data:{ labels:rows.map(function(r){return r.name;}),
+      datasets:[{ data:rows.map(function(r){return r.mean;}),
+        backgroundColor:rows.map(function(r){return r.mean<=5?t.pos:t.neg;}),
+        borderRadius:4, barThickness:18 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false,
+      scales:{
+        x:{min:1,max:9.6,grid:{color:t.line},border:{display:false},
+           ticks:{color:t.ink3,stepSize:1,font:{size:12}},
+           title:{display:true,color:t.ink3,font:{size:12},
+             text:'average rank, 1 = highest priority to keep, 9 = lowest'}},
+        y:{grid:{display:false},border:{display:false},
+           ticks:{color:t.ink2,autoSkip:false,font:{size:12}}}
+      },
+      plugins:{ legend:{display:false},
+        tooltip:{callbacks:{label:function(c){var r=rows[c.dataIndex];
+          return ['Average rank '+r.mean.toFixed(2)+'   SD '+r.sd.toFixed(2),
+                  r.top3+' of 14 ranked it top three, '+r.bot3+' bottom three'];}}}
+      }},
+    plugins:[errorPlugin(setRows)]
+  });
+}
+
+var sortKey='mean', sortDir=-1;
+function renderTuneTable(){
+  var rows=TUNES.slice().sort(function(a,b){
+    var A=a[sortKey],B=b[sortKey];
+    if(typeof A==='string'){ return sortDir*A.localeCompare(B); }
+    return sortDir*(A-B);
+  });
+  var tb=document.querySelector('#tuneTable tbody'); tb.innerHTML='';
+  rows.forEach(function(r){
+    var n=r.hold+r.keep+r.tired+r.stop;
+    var tr=document.createElement('tr');
+    if(activeSet!=='all' && r.set!==activeSet) tr.className='dim';
+    var seg=function(v,c){ return v? '<i style="width:'+(v/n*100)+'%;background:'+c+'"></i>':''; };
+    tr.innerHTML =
+      '<td class="tune">'+r.name+'</td>'+
+      '<td>'+SETS[r.set].name+'</td>'+
+      '<td>'+r.mean.toFixed(2)+'</td>'+
+      '<td>'+r.sd.toFixed(2)+'</td>'+
+      '<td>'+r.hold+'</td><td>'+r.keep+'</td><td>'+r.tired+'</td><td>'+r.stop+'</td>'+
+      '<td><span class="mini">'+seg(r.hold,'var(--pos)')+seg(r.keep,'color-mix(in srgb, var(--pos) 55%, transparent)')+
+      seg(r.tired,'color-mix(in srgb, var(--neg) 55%, transparent)')+seg(r.stop,'var(--neg)')+'</span></td>';
+    tb.appendChild(tr);
+  });
+}
+
+function renderSetTable(){
+  var tb=document.querySelector('#setTable tbody'); tb.innerHTML='';
+  setRows().forEach(function(r){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="tune">'+r.name+'</td><td>'+SETS[r.key].tunes.join(', ')+'</td>'+
+      '<td>'+r.mean.toFixed(2)+'</td><td>'+r.sd.toFixed(2)+'</td><td>'+r.top3+'</td><td>'+r.bot3+'</td>';
+    tb.appendChild(tr);
+  });
+}
+
+var fw=document.getElementById('setFilter');
+Object.keys(SETS).forEach(function(k){
+  var b=document.createElement('button');
+  b.className='chip'; b.dataset.set=k; b.setAttribute('aria-pressed','false'); b.textContent=SETS[k].name;
+  fw.appendChild(b);
+});
+fw.addEventListener('click',function(e){
+  var b=e.target.closest('.chip'); if(!b) return;
+  activeSet=b.dataset.set;
+  Array.prototype.forEach.call(fw.querySelectorAll('.chip'),function(c){
+    c.setAttribute('aria-pressed', c===b ? 'true':'false');
+  });
+  drawTunes(); renderTuneTable();
+});
+
+document.querySelectorAll('#tuneTable th[data-sort]').forEach(function(th){
+  th.addEventListener('click',function(){
+    var k=th.dataset.sort;
+    if(k===sortKey){ sortDir=-sortDir; } else { sortKey=k; sortDir=(k==='name'||k==='set')?1:-1; }
+    renderTuneTable();
+  });
+});
+
+var tabT=document.getElementById('tab-tunes'), tabS=document.getElementById('tab-sets');
+var panT=document.getElementById('panel-tunes'), panS=document.getElementById('panel-sets');
+function show(which){
+  var isT = which==='tunes';
+  tabT.setAttribute('aria-selected', isT?'true':'false');
+  tabS.setAttribute('aria-selected', isT?'false':'true');
+  panT.classList.toggle('hide', !isT);
+  panS.classList.toggle('hide', isT);
+  if(isT){ drawTunes(); } else { drawSets(); }
+}
+tabT.addEventListener('click',function(){show('tunes');});
+tabS.addEventListener('click',function(){show('sets');});
+
+drawTunes(); renderTuneTable(); renderSetTable();
+if(window.matchMedia){
+  var mq=window.matchMedia('(prefers-color-scheme: dark)');
+  var onChange=function(){ if(!panT.classList.contains('hide')) drawTunes(); else drawSets(); };
+  if(mq.addEventListener) mq.addEventListener('change',onChange);
+}
+</script>
+</body>
+</html>
