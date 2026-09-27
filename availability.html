@@ -72,26 +72,44 @@
                     <span><span class="avail-cell no">&#10007;</span> No</span>
                 </div>
 
-                <details class="avail-section">
-                    <summary><h3>Lessons</h3></summary>
-                    <div class="avail-table-wrap" id="lesson-grid">
-                        <p class="avail-loading">Loading&hellip;</p>
+                <section class="avail-section">
+                    <button type="button" class="avail-section-toggle" aria-expanded="false" aria-controls="lesson-body">
+                        <span class="avail-chevron" aria-hidden="true"></span>
+                        <span class="avail-section-title">Lessons</span>
+                        <span class="avail-section-hint">Show</span>
+                    </button>
+                    <div class="avail-section-body" id="lesson-body" hidden>
+                        <div class="avail-table-wrap" id="lesson-grid">
+                            <p class="avail-loading">Loading&hellip;</p>
+                        </div>
                     </div>
-                </details>
+                </section>
 
-                <details class="avail-section">
-                    <summary><h3>Practices</h3></summary>
-                    <div class="avail-table-wrap" id="practice-grid">
-                        <p class="avail-loading">Loading&hellip;</p>
+                <section class="avail-section">
+                    <button type="button" class="avail-section-toggle" aria-expanded="false" aria-controls="practice-body">
+                        <span class="avail-chevron" aria-hidden="true"></span>
+                        <span class="avail-section-title">Practices</span>
+                        <span class="avail-section-hint">Show</span>
+                    </button>
+                    <div class="avail-section-body" id="practice-body" hidden>
+                        <div class="avail-table-wrap" id="practice-grid">
+                            <p class="avail-loading">Loading&hellip;</p>
+                        </div>
                     </div>
-                </details>
+                </section>
 
-                <details class="avail-section">
-                    <summary><h3>Performances</h3></summary>
-                    <div class="avail-table-wrap" id="performance-grid">
-                        <p class="avail-loading">Loading&hellip;</p>
+                <section class="avail-section">
+                    <button type="button" class="avail-section-toggle" aria-expanded="false" aria-controls="performance-body">
+                        <span class="avail-chevron" aria-hidden="true"></span>
+                        <span class="avail-section-title">Performances</span>
+                        <span class="avail-section-hint">Show</span>
+                    </button>
+                    <div class="avail-section-body" id="performance-body" hidden>
+                        <div class="avail-table-wrap" id="performance-grid">
+                            <p class="avail-loading">Loading&hellip;</p>
+                        </div>
                     </div>
-                </details>
+                </section>
             </div>
 
             <div class="tunes-section avail-admin" id="admin-panel" hidden>
@@ -298,7 +316,8 @@
                     html += '<tr class="avail-group"><th colspan="' + span + '">' + g.label + '</th></tr>';
                     html += g.people.map(p => personRow(p, events, kind, g.tags(p))).join('');
                 });
-                html += '</tbody><tfoot>' + groups.map(g => countRow(g.countLabel, g.people, events)).join('');
+                html += '</tbody><tfoot><tr class="avail-count-heading"><th colspan="' + span + '">Number available</th></tr>' +
+                    groups.map(g => countRow(g.countLabel, g.people, events)).join('');
                 if (groups.length > 1) html += countRow(totalLabel, [].concat(...groups.map(g => g.people)), events).replace('avail-count', 'avail-count avail-total');
                 el.innerHTML = html + '</tfoot></table>';
             }
@@ -457,6 +476,15 @@
                     renderGrid();
                     showMessage('Could not save: ' + err.message, true);
                 }
+            });
+
+            document.querySelectorAll('.avail-section-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const open = btn.getAttribute('aria-expanded') !== 'true';
+                    btn.setAttribute('aria-expanded', String(open));
+                    $(btn.getAttribute('aria-controls')).hidden = !open;
+                    btn.querySelector('.avail-section-hint').textContent = open ? 'Hide' : 'Show';
+                });
             });
 
             $('login-form').addEventListener('submit', e => {
