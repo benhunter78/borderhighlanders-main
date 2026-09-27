@@ -9,10 +9,10 @@
 const CALENDAR_ID = 'ouoharbh0blj995hi71nio95tg@group.calendar.google.com';
 const DAYS_AHEAD = 60;          // how far ahead to list calendar events
 const VALID_STATUS = ['yes', 'maybe', 'no'];
-const VALID_ROLES = ['instructor', 'member', 'student'];
+const VALID_ROLES = ['member', 'student'];
 const PRACTICE_TITLE = 'band practice'; // events with this title are practices; everything else is a performance
 
-const PEOPLE_HEADERS = ['id', 'email', 'name', 'role', 'level', 'member'];
+const PEOPLE_HEADERS = ['id', 'email', 'name', 'role', 'level', 'instructor'];
 const AVAIL_HEADERS = ['personId', 'eventKey', 'status', 'updated'];
 
 /* ---------- Web entry points ---------- */
@@ -134,30 +134,39 @@ function setStatus_(p) {
 function addPerson_(p) {
   const name = String(p.name || '').trim();
   const email = normEmail_(p.email);
-  const role = VALID_ROLES.indexOf(p.role) === -1 ? 'student' : p.role;
   if (!name || !email) throw new Error('Name and email are required.');
   if (findByEmail_(email)) throw new Error('That email is already on the list.');
-  const id = Utilities.getUuid().slice(0, 8);
-  const level = role === 'student' ? String(p.level || '').trim() : '';
-  sheet_('People', PEOPLE_HEADERS).appendRow([id, email, name, role, level, memberFlag_(role, p.member)]);
+  const person = normalizeRecord_({
+    id: Utilities.getUuid().slice(0, 8),
+    email: email,
+    name: name,
+    role: p.role,
+    level: p.level,
+    instructor: p.instructor
+  });
+  const sh = sheet_('People', PEOPLE_HEADERS);
+  sh.appendRow(headerRow_(sh).map(h => person[h] !== undefined ? person[h] : ''));
   return getAdminData_();
 }
 
 function updatePerson_(p) {
   const sh = sheet_('People', PEOPLE_HEADERS);
+  const headers = headerRow_(sh);
   const values = sh.getDataRange().getValues();
+  const col = h => headers.indexOf(h);
   for (let i = 1; i < values.length; i++) {
-    if (values[i][0] !== p.id) continue;
-    const row = values[i].slice(0, PEOPLE_HEADERS.length);
-    while (row.length < PEOPLE_HEADERS.length) row.push('');
-    if (p.name !== undefined) row[2] = String(p.name).trim() || row[2];
-    if (p.email !== undefined) row[1] = normEmail_(p.email) || row[1];
-    if (p.role !== undefined && VALID_ROLES.indexOf(p.role) !== -1) row[3] = p.role;
-    if (p.level !== undefined) row[4] = String(p.level).trim();
-    const wasMember = isTruthy_(row[5]);
-    row[5] = memberFlag_(row[3], p.member !== undefined ? p.member : wasMember);
-    if (row[3] !== 'student') row[4] = '';
-    sh.getRange(i + 1, 1, 1, PEOPLE_HEADERS.length).setValues([row]);
+    if (values[i][col('id')] !== p.id) continue;
+    const row = values[i];
+    const current = {};
+    headers.forEach((h, j) => { current[h] = row[j]; });
+    if (p.name !== undefined) current.name = String(p.name).trim() || current.name;
+    if (p.email !== undefined) current.email = normEmail_(p.email) || current.email;
+    if (p.role !== undefined) current.role = p.role;
+    if (p.level !== undefined) current.level = p.level;
+    if (p.instructor !== undefined) current.instructor = p.instructor;
+    const person = normalizeRecord_(current);
+    const out = headers.map((h, j) => person[h] !== undefined ? person[h] : row[j]);
+    sh.getRange(i + 1, 1, 1, out.length).setValues([out]);
     return getAdminData_();
   }
   throw new Error('Person not found.');
@@ -194,22 +203,35 @@ function publicPeople_() {
 }
 
 function cleanPerson_(r) {
-  const role = VALID_ROLES.indexOf(r.role) === -1 ? 'student' : r.role;
+  const raw = String(r.role || '').trim().toLowerCase();
+  // Older rows may have role "instructor"; those are treated as band members who instruct.
+  const role = (raw === 'member' || raw === 'instructor') ? 'member' : 'student';
   return {
     id: String(r.id),
     email: String(r.email),
     name: String(r.name),
     role: role,
-    level: role === 'student' ? String(r.level || '') : '',
-    // Band members can mark performances. Instructors may also be members; students never are.
-    member: role === 'member' || (role === 'instructor' && isTruthy_(r.member))
+    member: role === 'member',   // band members can mark performances
+    instructor: role === 'member' && (raw === 'instructor' || isTruthy_(r.instructor)),
+    level: role === 'student' ? String(r.level || '') : ''
   };
 }
 
-function memberFlag_(role, requested) {
-  if (role === 'member') return 'yes';
-  if (role === 'instructor' && isTruthy_(requested)) return 'yes';
-  return '';
+/** Values to write to the sheet for a person, keyed by header name. */
+function normalizeRecord_(r) {
+  const c = cleanPerson_(r);
+  return {
+    id: c.id,
+    email: normEmail_(c.email),
+    name: c.name.trim(),
+    role: c.role,
+    level: c.level.trim(),
+    instructor: c.instructor ? 'yes' : ''
+  };
+}
+
+function headerRow_(sh) {
+  return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
 }
 
 function isTruthy_(v) {
