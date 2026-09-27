@@ -1215,3 +1215,8 @@ button.avail-cell.editable:hover {
 .avail-center {
     text-align: center;
 }
+
+.avail-grid tfoot tr.avail-total th,
+.avail-grid tfoot tr.avail-total td {
+    border-top: 2px solid var(--primary-color);
+}

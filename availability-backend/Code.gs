@@ -12,7 +12,9 @@ const VALID_STATUS = ['yes', 'maybe', 'no'];
 const VALID_ROLES = ['member', 'student'];
 const PRACTICE_TITLE = 'band practice'; // events with this title are practices; everything else is a performance
 
-const PEOPLE_HEADERS = ['id', 'email', 'name', 'role', 'level', 'instructor'];
+const PEOPLE_HEADERS = ['id', 'email', 'name', 'role', 'level', 'instructor', 'instrument'];
+const VALID_INSTRUMENTS = ['piper', 'snare', 'tenor', 'bass', 'drum major'];
+const LESSON_SUFFIX = '#lesson'; // each practice also has a lesson slot, keyed as <practice key>#lesson
 const AVAIL_HEADERS = ['personId', 'eventKey', 'status', 'updated'];
 
 /* ---------- Web entry points ---------- */
@@ -53,7 +55,10 @@ function handle_(p) {
 function getData_() {
   const events = getEvents_();
   const keys = {};
-  events.forEach(ev => { keys[ev.key] = true; });
+  events.forEach(ev => {
+    keys[ev.key] = true;
+    if (ev.type === 'practice') keys[ev.key + LESSON_SUFFIX] = true;
+  });
 
   const availability = {};
   readRows_(sheet_('Availability', AVAIL_HEADERS)).forEach(r => {
@@ -106,11 +111,18 @@ function setStatus_(p) {
   }
   if (!person) throw new Error('Person not found.');
   if (!p.eventKey) throw new Error('Missing event.');
+  const key = String(p.eventKey);
+  const isLesson = key.slice(-LESSON_SUFFIX.length) === LESSON_SUFFIX;
   const cal = CalendarApp.getCalendarById(CALENDAR_ID);
-  const ev = cal && cal.getEventById(String(p.eventKey).split('|')[0]);
+  const ev = cal && cal.getEventById(key.split('|')[0]);
   if (!ev) throw new Error('Event not found.');
-  if (eventType_(ev.getTitle()) === 'performance' && !cleanPerson_(person).member) {
-    throw new Error('Only band members can mark availability for performances.');
+  const type = eventType_(ev.getTitle());
+  const who = cleanPerson_(person);
+  if (isLesson) {
+    if (type !== 'practice') throw new Error('Event not found.');
+    if (!(who.role === 'student' || who.instructor)) throw new Error('Only students and instructors mark lessons.');
+  } else if (!who.member) {
+    throw new Error('Only band members can mark ' + (type === 'practice' ? 'practices.' : 'performances.'));
   }
   const status = String(p.status || '');
   if (status && VALID_STATUS.indexOf(status) === -1) throw new Error('Invalid status.');
@@ -142,7 +154,8 @@ function addPerson_(p) {
     name: name,
     role: p.role,
     level: p.level,
-    instructor: p.instructor
+    instructor: p.instructor,
+    instrument: p.instrument
   });
   const sh = sheet_('People', PEOPLE_HEADERS);
   sh.appendRow(headerRow_(sh).map(h => person[h] !== undefined ? person[h] : ''));
@@ -164,6 +177,7 @@ function updatePerson_(p) {
     if (p.role !== undefined) current.role = p.role;
     if (p.level !== undefined) current.level = p.level;
     if (p.instructor !== undefined) current.instructor = p.instructor;
+    if (p.instrument !== undefined) current.instrument = p.instrument;
     const person = normalizeRecord_(current);
     const out = headers.map((h, j) => person[h] !== undefined ? person[h] : row[j]);
     sh.getRange(i + 1, 1, 1, out.length).setValues([out]);
@@ -213,7 +227,8 @@ function cleanPerson_(r) {
     role: role,
     member: role === 'member',   // band members can mark performances
     instructor: role === 'member' && (raw === 'instructor' || isTruthy_(r.instructor)),
-    level: role === 'student' ? String(r.level || '') : ''
+    level: role === 'student' ? String(r.level || '') : '',
+    instrument: normInstrument_(r.instrument)
   };
 }
 
@@ -226,8 +241,16 @@ function normalizeRecord_(r) {
     name: c.name.trim(),
     role: c.role,
     level: c.level.trim(),
-    instructor: c.instructor ? 'yes' : ''
+    instructor: c.instructor ? 'yes' : '',
+    instrument: c.instrument
   };
+}
+
+function normInstrument_(v) {
+  let s = String(v || '').trim().toLowerCase();
+  if (s === 'pipes' || s === 'pipe') s = 'piper';
+  if (s === 'drummajor' || s === 'dm') s = 'drum major';
+  return VALID_INSTRUMENTS.indexOf(s) === -1 ? '' : s;
 }
 
 function headerRow_(sh) {
