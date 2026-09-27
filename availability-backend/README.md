@@ -16,5 +16,6 @@
 
 - Events come from the band Google Calendar for the next 60 days (`DAYS_AHEAD` in `Code.gs`). Add or change an event in Google Calendar and it shows up on the page automatically.
 - If you edit `Code.gs` later, use **Deploy > Manage deployments > Edit (pencil) > Version: New version** so the URL stays the same.
-- You can also edit the `People` tab directly in the sheet (role must be `instructor` or `student`). Leave the `id` column alone for existing rows; new rows added by hand need a unique id (any short text).
+- Events titled exactly "Band Practice" go in the Practices table; every other event goes in Performances. Everyone can mark practices; only band members can mark performances.
+- You can also edit the `People` tab directly in the sheet (role must be `instructor`, `member`, or `student`; put `yes` in the `member` column for instructors who are also band members). Leave the `id` column alone for existing rows; new rows added by hand need a unique id (any short text).
 - Emails are never sent to the public page; only names, roles, and levels are.

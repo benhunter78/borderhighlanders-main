@@ -9,9 +9,10 @@
 const CALENDAR_ID = 'ouoharbh0blj995hi71nio95tg@group.calendar.google.com';
 const DAYS_AHEAD = 60;          // how far ahead to list calendar events
 const VALID_STATUS = ['yes', 'maybe', 'no'];
-const VALID_ROLES = ['instructor', 'student'];
+const VALID_ROLES = ['instructor', 'member', 'student'];
+const PRACTICE_TITLE = 'band practice'; // events with this title are practices; everything else is a performance
 
-const PEOPLE_HEADERS = ['id', 'email', 'name', 'role', 'level'];
+const PEOPLE_HEADERS = ['id', 'email', 'name', 'role', 'level', 'member'];
 const AVAIL_HEADERS = ['personId', 'eventKey', 'status', 'updated'];
 
 /* ---------- Web entry points ---------- */
@@ -85,6 +86,7 @@ function getEvents_() {
     // Recurring events share an ID, so include the start time to make the key unique.
     key: ev.getId() + '|' + ev.getStartTime().getTime(),
     title: ev.getTitle(),
+    type: eventType_(ev.getTitle()),
     start: ev.getStartTime().toISOString(),
     end: ev.getEndTime().toISOString(),
     allDay: ev.isAllDayEvent(),
@@ -104,6 +106,12 @@ function setStatus_(p) {
   }
   if (!person) throw new Error('Person not found.');
   if (!p.eventKey) throw new Error('Missing event.');
+  const cal = CalendarApp.getCalendarById(CALENDAR_ID);
+  const ev = cal && cal.getEventById(String(p.eventKey).split('|')[0]);
+  if (!ev) throw new Error('Event not found.');
+  if (eventType_(ev.getTitle()) === 'performance' && !cleanPerson_(person).member) {
+    throw new Error('Only band members can mark availability for performances.');
+  }
   const status = String(p.status || '');
   if (status && VALID_STATUS.indexOf(status) === -1) throw new Error('Invalid status.');
 
@@ -130,7 +138,8 @@ function addPerson_(p) {
   if (!name || !email) throw new Error('Name and email are required.');
   if (findByEmail_(email)) throw new Error('That email is already on the list.');
   const id = Utilities.getUuid().slice(0, 8);
-  sheet_('People', PEOPLE_HEADERS).appendRow([id, email, name, role, String(p.level || '').trim()]);
+  const level = role === 'student' ? String(p.level || '').trim() : '';
+  sheet_('People', PEOPLE_HEADERS).appendRow([id, email, name, role, level, memberFlag_(role, p.member)]);
   return getAdminData_();
 }
 
@@ -139,11 +148,15 @@ function updatePerson_(p) {
   const values = sh.getDataRange().getValues();
   for (let i = 1; i < values.length; i++) {
     if (values[i][0] !== p.id) continue;
-    const row = values[i];
+    const row = values[i].slice(0, PEOPLE_HEADERS.length);
+    while (row.length < PEOPLE_HEADERS.length) row.push('');
     if (p.name !== undefined) row[2] = String(p.name).trim() || row[2];
     if (p.email !== undefined) row[1] = normEmail_(p.email) || row[1];
     if (p.role !== undefined && VALID_ROLES.indexOf(p.role) !== -1) row[3] = p.role;
     if (p.level !== undefined) row[4] = String(p.level).trim();
+    const wasMember = isTruthy_(row[5]);
+    row[5] = memberFlag_(row[3], p.member !== undefined ? p.member : wasMember);
+    if (row[3] !== 'student') row[4] = '';
     sh.getRange(i + 1, 1, 1, PEOPLE_HEADERS.length).setValues([row]);
     return getAdminData_();
   }
@@ -181,13 +194,30 @@ function publicPeople_() {
 }
 
 function cleanPerson_(r) {
+  const role = VALID_ROLES.indexOf(r.role) === -1 ? 'student' : r.role;
   return {
     id: String(r.id),
     email: String(r.email),
     name: String(r.name),
-    role: VALID_ROLES.indexOf(r.role) === -1 ? 'student' : r.role,
-    level: String(r.level || '')
+    role: role,
+    level: role === 'student' ? String(r.level || '') : '',
+    // Band members can mark performances. Instructors may also be members; students never are.
+    member: role === 'member' || (role === 'instructor' && isTruthy_(r.member))
   };
+}
+
+function memberFlag_(role, requested) {
+  if (role === 'member') return 'yes';
+  if (role === 'instructor' && isTruthy_(requested)) return 'yes';
+  return '';
+}
+
+function isTruthy_(v) {
+  return v === true || /^(true|yes|y|x|1)$/i.test(String(v || '').trim());
+}
+
+function eventType_(title) {
+  return String(title || '').trim().toLowerCase() === PRACTICE_TITLE ? 'practice' : 'performance';
 }
 
 function findByEmail_(email) {
@@ -207,7 +237,17 @@ function sheet_(name, headers) {
     sh = ss.insertSheet(name);
     sh.appendRow(headers);
     sh.setFrozenRows(1);
+    return sh;
   }
+  // Add any header columns introduced by newer versions of this script.
+  const lastCol = Math.max(sh.getLastColumn(), 1);
+  const existing = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+  headers.forEach(h => {
+    if (existing.indexOf(h) === -1) {
+      existing.push(h);
+      sh.getRange(1, existing.length).setValue(h);
+    }
+  });
   return sh;
 }
 

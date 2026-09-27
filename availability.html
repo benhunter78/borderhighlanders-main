@@ -54,7 +54,7 @@
         <div class="container">
             <div class="tunes-section">
                 <h2>Who's Available?</h2>
-                <p class="avail-intro">Upcoming events come straight from the band <a href="calendar.html">Google Calendar</a>. Enter your email to mark yourself, then tap a cell to cycle through <strong>Yes</strong>, <strong>Maybe</strong>, <strong>No</strong>, and blank.</p>
+                <p class="avail-intro">Upcoming events come straight from the band <a href="calendar.html">Google Calendar</a>. Enter your email to mark yourself, then tap a cell to cycle through <strong>Yes</strong>, <strong>Maybe</strong>, <strong>No</strong>, and blank. Everyone marks practices; band members also mark performances.</p>
 
                 <form class="avail-login" id="login-form">
                     <input type="email" id="email-input" placeholder="Your email address" autocomplete="email" required>
@@ -72,7 +72,13 @@
                     <span><span class="avail-cell no">&#10007;</span> No</span>
                 </div>
 
-                <div class="avail-table-wrap" id="grid">
+                <h3>Practices</h3>
+                <div class="avail-table-wrap" id="practice-grid">
+                    <p class="avail-loading">Loading&hellip;</p>
+                </div>
+
+                <h3>Performances</h3>
+                <div class="avail-table-wrap" id="performance-grid">
                     <p class="avail-loading">Loading&hellip;</p>
                 </div>
             </div>
@@ -84,8 +90,10 @@
                     <input type="email" id="add-email" placeholder="Email" required>
                     <select id="add-role">
                         <option value="student">Student</option>
+                        <option value="member">Band Member</option>
                         <option value="instructor">Instructor</option>
                     </select>
+                    <label class="avail-check" id="add-member-label"><input type="checkbox" id="add-member" disabled> Also band member</label>
                     <input type="text" id="add-level" placeholder="Level (students)" list="level-options">
                     <button type="submit">Add</button>
                 </form>
@@ -93,7 +101,7 @@
                 <div class="avail-table-wrap">
                     <table class="tunes-table avail-roster">
                         <thead>
-                            <tr><th>Name</th><th>Email</th><th>Role</th><th>Level</th><th></th></tr>
+                            <tr><th>Name</th><th>Email</th><th>Role</th><th>Band member</th><th>Level</th><th></th></tr>
                         </thead>
                         <tbody id="roster-body"></tbody>
                     </table>
@@ -164,6 +172,7 @@
             const SYMBOL = { yes: '✓', maybe: '?', no: '✗', '': '' };
             const LABEL = { yes: 'Yes', maybe: 'Maybe', no: 'No', '': 'Not set' };
 
+            const ROLE_LABEL = { instructor: 'Instructor', member: 'Band Member', student: 'Student' };
             const state = { people: [], events: [], availability: {}, me: null, adminKey: '', roster: [] };
             const $ = id => document.getElementById(id);
 
@@ -219,16 +228,22 @@
                 return (state.availability[eventKey] || {})[personId] || '';
             }
 
-            function personRow(p) {
-                const editable = !!state.adminKey || (state.me && state.me.id === p.id);
-                let html = '<tr class="' + (state.me && state.me.id === p.id ? 'avail-mine' : '') + '">' +
-                    '<th scope="row" class="avail-name">' + esc(p.name) +
-                    (p.role === 'student' && p.level ? '<span class="avail-level">' + esc(p.level) + '</span>' : '') +
-                    '</th>';
-                state.events.forEach(ev => {
+            function canEdit(p, ev) {
+                if (ev.type === 'performance' && !p.member) return false;
+                return !!state.adminKey || (!!state.me && state.me.id === p.id);
+            }
+
+            function personRow(p, events, showRole) {
+                const mine = state.me && state.me.id === p.id;
+                let tag = '';
+                if (p.role === 'student' && p.level) tag = '<span class="avail-level">' + esc(p.level) + '</span>';
+                else if (showRole && p.role === 'instructor') tag = '<span class="avail-level">Instructor</span>';
+                let html = '<tr class="' + (mine ? 'avail-mine' : '') + '">' +
+                    '<th scope="row" class="avail-name">' + esc(p.name) + tag + '</th>';
+                events.forEach(ev => {
                     const s = statusOf(p.id, ev.key);
                     const label = p.name + ', ' + ev.title + ' ' + fmt(ev.start, { month: 'short', day: 'numeric' }) + ': ' + LABEL[s];
-                    html += '<td>' + (editable
+                    html += '<td>' + (canEdit(p, ev)
                         ? '<button type="button" class="avail-cell editable ' + s + '" data-person="' + esc(p.id) + '" data-event="' + esc(ev.key) + '" aria-label="' + esc(label) + '">' + SYMBOL[s] + '</button>'
                         : '<span class="avail-cell ' + s + '" title="' + esc(LABEL[s]) + '" aria-label="' + esc(label) + '">' + SYMBOL[s] + '</span>') +
                         '</td>';
@@ -236,9 +251,9 @@
                 return html + '</tr>';
             }
 
-            function countRow(label, group) {
+            function countRow(label, group, events) {
                 let html = '<tr class="avail-count"><th scope="row">' + label + '</th>';
-                state.events.forEach(ev => {
+                events.forEach(ev => {
                     let yes = 0, maybe = 0;
                     group.forEach(p => {
                         const s = statusOf(p.id, ev.key);
@@ -250,28 +265,35 @@
                 return html + '</tr>';
             }
 
-            function renderGrid() {
-                const grid = $('grid');
-                if (!state.events.length) {
-                    grid.innerHTML = '<p class="avail-loading">No upcoming events on the band calendar.</p>';
+            // groups: [{ label, people, countLabel, showRole }]
+            function renderTable(el, events, groups, emptyText) {
+                if (!events.length) {
+                    el.innerHTML = '<p class="avail-loading">' + emptyText + '</p>';
                     return;
                 }
-                const byName = (a, b) => a.name.localeCompare(b.name);
-                const instructors = state.people.filter(p => p.role === 'instructor').sort(byName);
-                const students = state.people.filter(p => p.role !== 'instructor').sort(byName);
-                const span = state.events.length + 1;
-
+                const span = events.length + 1;
                 let html = '<table class="tunes-table avail-grid"><thead><tr><th class="avail-corner">Name</th>' +
-                    state.events.map(eventHeader).join('') + '</tr></thead><tbody>';
-                html += '<tr class="avail-group"><th colspan="' + span + '">Instructors</th></tr>';
-                html += instructors.length ? instructors.map(personRow).join('') :
-                    '<tr><td colspan="' + span + '" class="avail-empty">No instructors yet</td></tr>';
-                html += '<tr class="avail-group"><th colspan="' + span + '">Students</th></tr>';
-                html += students.length ? students.map(personRow).join('') :
-                    '<tr><td colspan="' + span + '" class="avail-empty">No students yet</td></tr>';
-                html += '</tbody><tfoot>' + countRow('Instructors available', instructors) +
-                    countRow('Students available', students) + '</tfoot></table>';
-                grid.innerHTML = html;
+                    events.map(eventHeader).join('') + '</tr></thead><tbody>';
+                groups.forEach(g => {
+                    if (g.label) html += '<tr class="avail-group"><th colspan="' + span + '">' + g.label + '</th></tr>';
+                    html += g.people.length ? g.people.map(p => personRow(p, events, g.showRole)).join('') :
+                        '<tr><td colspan="' + span + '" class="avail-empty">Nobody yet</td></tr>';
+                });
+                html += '</tbody><tfoot>' + groups.map(g => countRow(g.countLabel, g.people, events)).join('') + '</tfoot></table>';
+                el.innerHTML = html;
+            }
+
+            function renderGrid() {
+                const byName = (a, b) => a.name.localeCompare(b.name);
+                const ofRole = r => state.people.filter(p => p.role === r).sort(byName);
+                renderTable($('practice-grid'), state.events.filter(ev => ev.type === 'practice'), [
+                    { label: 'Instructors', people: ofRole('instructor'), countLabel: 'Instructors available' },
+                    { label: 'Band Members', people: ofRole('member'), countLabel: 'Band members available' },
+                    { label: 'Students', people: ofRole('student'), countLabel: 'Students available' }
+                ], 'No upcoming practices on the band calendar.');
+                renderTable($('performance-grid'), state.events.filter(ev => ev.type === 'performance'), [
+                    { label: '', people: state.people.filter(p => p.member).sort(byName), countLabel: 'Available', showRole: true }
+                ], 'No upcoming performances on the band calendar.');
             }
 
             function renderMe() {
@@ -287,19 +309,20 @@
                 if (!on) return;
                 const levels = [...new Set(state.roster.map(p => p.level).filter(Boolean))].sort();
                 $('level-options').innerHTML = levels.map(l => '<option value="' + esc(l) + '">').join('');
-                const sorted = state.roster.slice().sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name));
+                const order = { instructor: 0, member: 1, student: 2 };
+                const sorted = state.roster.slice().sort((a, b) => order[a.role] - order[b.role] || a.name.localeCompare(b.name));
                 $('roster-body').innerHTML = sorted.map(p =>
                     '<tr data-id="' + esc(p.id) + '">' +
                     '<td><input type="text" data-field="name" value="' + esc(p.name) + '"></td>' +
                     '<td><input type="email" data-field="email" value="' + esc(p.email) + '"></td>' +
                     '<td><select data-field="role">' +
-                        '<option value="student"' + (p.role === 'student' ? ' selected' : '') + '>Student</option>' +
-                        '<option value="instructor"' + (p.role === 'instructor' ? ' selected' : '') + '>Instructor</option>' +
+                        Object.keys(ROLE_LABEL).map(r => '<option value="' + r + '"' + (p.role === r ? ' selected' : '') + '>' + ROLE_LABEL[r] + '</option>').join('') +
                     '</select></td>' +
-                    '<td><input type="text" data-field="level" list="level-options" value="' + esc(p.level) + '"' + (p.role === 'instructor' ? ' disabled' : '') + '></td>' +
+                    '<td class="avail-center"><input type="checkbox" data-field="member"' + (p.member ? ' checked' : '') + (p.role === 'instructor' ? '' : ' disabled') + ' aria-label="Band member"></td>' +
+                    '<td><input type="text" data-field="level" list="level-options" value="' + esc(p.level) + '"' + (p.role === 'student' ? '' : ' disabled') + '></td>' +
                     '<td><button type="button" class="avail-remove" data-remove="' + esc(p.id) + '">Remove</button></td>' +
                     '</tr>'
-                ).join('') || '<tr><td colspan="5" class="avail-empty">Nobody on the roster yet.</td></tr>';
+                ).join('') || '<tr><td colspan="6" class="avail-empty">Nobody on the roster yet.</td></tr>';
             }
 
             /* ---------- Data ---------- */
@@ -318,7 +341,9 @@
                     renderMe();
                     renderGrid();
                 } catch (err) {
-                    $('grid').innerHTML = '<p class="avail-loading">Could not load availability: ' + esc(err.message) + '</p>';
+                    ['practice-grid', 'performance-grid'].forEach(id => {
+                        $(id).innerHTML = '<p class="avail-loading">Could not load availability: ' + esc(err.message) + '</p>';
+                    });
                 }
             }
 
@@ -370,7 +395,7 @@
 
             /* ---------- Events ---------- */
 
-            $('grid').addEventListener('click', async e => {
+            document.querySelector('.tunes-section').addEventListener('click', async e => {
                 const btn = e.target.closest('button.avail-cell');
                 if (!btn) return;
                 const personId = btn.dataset.person, eventKey = btn.dataset.event;
@@ -420,9 +445,15 @@
                 renderGrid();
             });
 
-            $('add-role').addEventListener('change', () => {
-                $('add-level').disabled = $('add-role').value === 'instructor';
-            });
+            function syncAddForm() {
+                const role = $('add-role').value;
+                $('add-level').disabled = role !== 'student';
+                $('add-member').disabled = role !== 'instructor';
+                $('add-member').checked = role === 'member' || (role === 'instructor' && $('add-member').checked);
+                $('add-member-label').classList.toggle('disabled', role !== 'instructor');
+            }
+            $('add-role').addEventListener('change', syncAddForm);
+            syncAddForm();
             $('add-form').addEventListener('submit', async e => {
                 e.preventDefault();
                 await adminCall({
@@ -430,10 +461,11 @@
                     name: $('add-name').value,
                     email: $('add-email').value,
                     role: $('add-role').value,
+                    member: $('add-member').checked,
                     level: $('add-role').value === 'student' ? $('add-level').value : ''
                 });
                 $('add-form').reset();
-                $('add-level').disabled = false;
+                syncAddForm();
                 $('add-name').focus();
             });
 
@@ -441,7 +473,8 @@
                 const field = e.target.dataset.field;
                 if (!field) return;
                 const id = e.target.closest('tr').dataset.id;
-                adminCall({ action: 'updatePerson', id: id, [field]: e.target.value });
+                const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                adminCall({ action: 'updatePerson', id: id, [field]: value });
             });
             $('roster-body').addEventListener('click', e => {
                 const id = e.target.dataset.remove;
@@ -459,7 +492,7 @@
                 if (started) return;
                 started = true;
                 if (!API_URL || API_URL.indexOf('PASTE_') === 0) {
-                    $('grid').innerHTML = '<p class="avail-loading">Setup needed: add the Google Apps Script URL to availability.html (see availability-backend/README.md).</p>';
+                    $('practice-grid').innerHTML = '<p class="avail-loading">Setup needed: add the Google Apps Script URL to availability.html (see availability-backend/README.md).</p>';
                     return;
                 }
                 const email = load('bhAvailEmail');

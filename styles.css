@@ -1188,3 +1188,30 @@ button.avail-cell.editable:hover {
         white-space: normal;
     }
 }
+
+.page-availability .tunes-section h3 {
+    margin-top: 2rem;
+}
+
+.avail-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.5rem;
+    white-space: nowrap;
+}
+
+.avail-check.disabled {
+    opacity: 0.45;
+}
+
+.avail-roster input[type="checkbox"],
+.avail-check input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--primary-color);
+}
+
+.avail-center {
+    text-align: center;
+}
