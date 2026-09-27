@@ -1220,3 +1220,52 @@ button.avail-cell.editable:hover {
 .avail-grid tfoot tr.avail-total td {
     border-top: 2px solid var(--primary-color);
 }
+
+.avail-section {
+    margin-top: 0.75rem;
+}
+
+.avail-section[open] {
+    margin-bottom: 1.5rem;
+}
+
+.avail-section > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    list-style: none;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid #e2e2e2;
+}
+
+.avail-section[open] > summary {
+    margin-bottom: 1rem;
+}
+
+.avail-section > summary::-webkit-details-marker {
+    display: none;
+}
+
+.avail-section > summary::before {
+    content: '';
+    width: 0.6rem;
+    height: 0.6rem;
+    border-right: 3px solid var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.avail-section[open] > summary::before {
+    transform: rotate(45deg);
+}
+
+.page-availability .avail-section > summary h3 {
+    margin: 0;
+}
+
+.avail-section > summary:hover h3 {
+    color: var(--accent-color);
+}
