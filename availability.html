@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Availability - Border Highlanders Pipes & Drums</title>
+
+    <link rel="preload" as="image" href="images/portrait.jpg">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/fav/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/fav/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/fav/favicon-16x16.png">
+    <link rel="manifest" href="/fav/site.webmanifest">
+    <link rel="icon" href="/fav/favicon.ico" type="image/x-icon">
+</head>
+<body class="page-availability">
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="calendar.html">Calendar</a></li>
+            <li><a href="moscow-burns-night.html">Moscow Burns Night</a></li>
+            <li><a href="join.html">Join</a></li>
+            <li><a href="tunes.html">Tunes</a></li>
+            <li><a href="availability.html" class="active">Availability</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <img src="images/CrestSquareTransparent.png" alt="Border Highlanders Crest" class="hero-logo">
+            <div class="hero-text">
+                <h1>Availability</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="password-prompt" id="password-prompt">
+        <div class="container">
+            <h2>This page is password protected</h2>
+            <p>Please enter the band password to see and update availability.</p>
+            <form class="password-form" id="password-form">
+                <input type="password" id="password-input" placeholder="Enter password" autocomplete="off">
+                <button type="submit">Continue</button>
+                <p class="password-error" id="password-error" style="display: none;">Incorrect password. Please try again.</p>
+            </form>
+        </div>
+    </div>
+
+    <div class="tunes-protected" id="tunes-content">
+        <div class="container">
+            <div class="tunes-section">
+                <h2>Who's Available?</h2>
+                <p class="avail-intro">Upcoming events come straight from the band <a href="calendar.html">Google Calendar</a>. Enter your email to mark yourself, then tap a cell to cycle through <strong>Yes</strong>, <strong>Maybe</strong>, <strong>No</strong>, and blank.</p>
+
+                <form class="avail-login" id="login-form">
+                    <input type="email" id="email-input" placeholder="Your email address" autocomplete="email" required>
+                    <button type="submit">That's me</button>
+                </form>
+                <div class="avail-me" id="me-bar" hidden>
+                    Marking availability as <strong id="me-name"></strong>
+                    <button type="button" class="avail-link-button" id="logout-button">Not you?</button>
+                </div>
+                <p class="avail-message" id="message" hidden></p>
+
+                <div class="avail-legend" aria-hidden="true">
+                    <span><span class="avail-cell yes">&#10003;</span> Yes</span>
+                    <span><span class="avail-cell maybe">?</span> Maybe</span>
+                    <span><span class="avail-cell no">&#10007;</span> No</span>
+                </div>
+
+                <div class="avail-table-wrap" id="grid">
+                    <p class="avail-loading">Loading&hellip;</p>
+                </div>
+            </div>
+
+            <div class="tunes-section avail-admin" id="admin-panel" hidden>
+                <h2>Manage Roster</h2>
+                <form class="avail-admin-add" id="add-form">
+                    <input type="text" id="add-name" placeholder="Name" required>
+                    <input type="email" id="add-email" placeholder="Email" required>
+                    <select id="add-role">
+                        <option value="student">Student</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
+                    <input type="text" id="add-level" placeholder="Level (students)" list="level-options">
+                    <button type="submit">Add</button>
+                </form>
+                <datalist id="level-options"></datalist>
+                <div class="avail-table-wrap">
+                    <table class="tunes-table avail-roster">
+                        <thead>
+                            <tr><th>Name</th><th>Email</th><th>Role</th><th>Level</th><th></th></tr>
+                        </thead>
+                        <tbody id="roster-body"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="avail-link-button" id="admin-logout">Leave admin mode</button>
+            </div>
+
+            <form class="avail-admin-login" id="admin-login" hidden>
+                <input type="password" id="admin-key" placeholder="Admin key" autocomplete="off">
+                <button type="submit">Unlock admin</button>
+            </form>
+            <p class="avail-admin-toggle"><button type="button" class="avail-link-button" id="admin-toggle">Admin</button></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Border Highlanders Pipes & Drums</p>
+        <p>Scottish Highland piping and drumming on the Palouse since 1974</p>
+        <a href="#" id="vandalize-link" class="vandalize-link">Vandalize this page!</a>
+    </footer>
+    <script src="script.js"></script>
+    <script>
+        // Page password (same password and saved login as the Tunes page)
+        (function() {
+            const CORRECT_PASSWORD = 'MoscowPullman';
+            const AUTH_KEY = 'tunesAuth';
+            const EXPIRY_DAYS = 30;
+
+            function checkAuth() {
+                try {
+                    const { timestamp } = JSON.parse(localStorage.getItem(AUTH_KEY));
+                    if (Date.now() - timestamp < EXPIRY_DAYS * 24 * 60 * 60 * 1000) return true;
+                } catch (e) {}
+                localStorage.removeItem(AUTH_KEY);
+                return false;
+            }
+
+            function unlockPage() {
+                document.getElementById('password-prompt').style.display = 'none';
+                document.getElementById('tunes-content').classList.add('unlocked');
+                localStorage.setItem(AUTH_KEY, JSON.stringify({ timestamp: Date.now() }));
+                window.dispatchEvent(new Event('page-unlocked'));
+            }
+
+            document.getElementById('password-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (document.getElementById('password-input').value === CORRECT_PASSWORD) {
+                    unlockPage();
+                } else {
+                    document.getElementById('password-error').style.display = 'block';
+                    document.getElementById('password-input').value = '';
+                    document.getElementById('password-input').focus();
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', function() {
+                if (checkAuth()) unlockPage();
+                else document.getElementById('password-input').focus();
+            });
+        })();
+
+        // Availability grid
+        (function() {
+            // Paste the Google Apps Script web app URL here (see availability-backend/README.md)
+            const API_URL = 'https://script.google.com/macros/s/AKfycbxhyl4tg7rLEfNOBjWlhK-I93guZumr81XuGRv7lQ46uAOrfPxmhpLw382ZgU896JULfA/exec';
+            const TZ = 'America/Los_Angeles';
+            const CYCLE = ['', 'yes', 'maybe', 'no'];
+            const SYMBOL = { yes: '✓', maybe: '?', no: '✗', '': '' };
+            const LABEL = { yes: 'Yes', maybe: 'Maybe', no: 'No', '': 'Not set' };
+
+            const state = { people: [], events: [], availability: {}, me: null, adminKey: '', roster: [] };
+            const $ = id => document.getElementById(id);
+
+            function store(key, value) {
+                try { value ? localStorage.setItem(key, value) : localStorage.removeItem(key); } catch (e) {}
+            }
+            function load(key) {
+                try { return localStorage.getItem(key) || ''; } catch (e) { return ''; }
+            }
+            function esc(s) {
+                return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            }
+            function showMessage(text, isError) {
+                const el = $('message');
+                el.textContent = text || '';
+                el.hidden = !text;
+                el.classList.toggle('error', !!isError);
+            }
+
+            async function api(params, post) {
+                let res;
+                if (post) {
+                    res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(params)
+                    });
+                } else {
+                    res = await fetch(API_URL + '?' + new URLSearchParams(params));
+                }
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                return data;
+            }
+
+            /* ---------- Rendering ---------- */
+
+            function fmt(iso, opts) {
+                return new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: TZ }, opts)).format(new Date(iso));
+            }
+
+            function eventHeader(ev) {
+                const time = ev.allDay ? 'All day' : fmt(ev.start, { hour: 'numeric', minute: '2-digit' });
+                const tip = ev.title + (ev.location ? ' @ ' + ev.location : '');
+                return '<th class="avail-event" title="' + esc(tip) + '">' +
+                    '<span class="avail-dow">' + fmt(ev.start, { weekday: 'short' }) + '</span>' +
+                    '<span class="avail-date">' + fmt(ev.start, { month: 'short', day: 'numeric' }) + '</span>' +
+                    '<span class="avail-title">' + esc(ev.title) + '</span>' +
+                    '<span class="avail-time">' + time + '</span></th>';
+            }
+
+            function statusOf(personId, eventKey) {
+                return (state.availability[eventKey] || {})[personId] || '';
+            }
+
+            function personRow(p) {
+                const editable = !!state.adminKey || (state.me && state.me.id === p.id);
+                let html = '<tr class="' + (state.me && state.me.id === p.id ? 'avail-mine' : '') + '">' +
+                    '<th scope="row" class="avail-name">' + esc(p.name) +
+                    (p.role === 'student' && p.level ? '<span class="avail-level">' + esc(p.level) + '</span>' : '') +
+                    '</th>';
+                state.events.forEach(ev => {
+                    const s = statusOf(p.id, ev.key);
+                    const label = p.name + ', ' + ev.title + ' ' + fmt(ev.start, { month: 'short', day: 'numeric' }) + ': ' + LABEL[s];
+                    html += '<td>' + (editable
+                        ? '<button type="button" class="avail-cell editable ' + s + '" data-person="' + esc(p.id) + '" data-event="' + esc(ev.key) + '" aria-label="' + esc(label) + '">' + SYMBOL[s] + '</button>'
+                        : '<span class="avail-cell ' + s + '" title="' + esc(LABEL[s]) + '" aria-label="' + esc(label) + '">' + SYMBOL[s] + '</span>') +
+                        '</td>';
+                });
+                return html + '</tr>';
+            }
+
+            function countRow(label, group) {
+                let html = '<tr class="avail-count"><th scope="row">' + label + '</th>';
+                state.events.forEach(ev => {
+                    let yes = 0, maybe = 0;
+                    group.forEach(p => {
+                        const s = statusOf(p.id, ev.key);
+                        if (s === 'yes') yes++;
+                        if (s === 'maybe') maybe++;
+                    });
+                    html += '<td>' + yes + (maybe ? ' <span class="avail-maybe-count">+' + maybe + '?</span>' : '') + '</td>';
+                });
+                return html + '</tr>';
+            }
+
+            function renderGrid() {
+                const grid = $('grid');
+                if (!state.events.length) {
+                    grid.innerHTML = '<p class="avail-loading">No upcoming events on the band calendar.</p>';
+                    return;
+                }
+                const byName = (a, b) => a.name.localeCompare(b.name);
+                const instructors = state.people.filter(p => p.role === 'instructor').sort(byName);
+                const students = state.people.filter(p => p.role !== 'instructor').sort(byName);
+                const span = state.events.length + 1;
+
+                let html = '<table class="tunes-table avail-grid"><thead><tr><th class="avail-corner">Name</th>' +
+                    state.events.map(eventHeader).join('') + '</tr></thead><tbody>';
+                html += '<tr class="avail-group"><th colspan="' + span + '">Instructors</th></tr>';
+                html += instructors.length ? instructors.map(personRow).join('') :
+                    '<tr><td colspan="' + span + '" class="avail-empty">No instructors yet</td></tr>';
+                html += '<tr class="avail-group"><th colspan="' + span + '">Students</th></tr>';
+                html += students.length ? students.map(personRow).join('') :
+                    '<tr><td colspan="' + span + '" class="avail-empty">No students yet</td></tr>';
+                html += '</tbody><tfoot>' + countRow('Instructors available', instructors) +
+                    countRow('Students available', students) + '</tfoot></table>';
+                grid.innerHTML = html;
+            }
+
+            function renderMe() {
+                $('login-form').hidden = !!state.me;
+                $('me-bar').hidden = !state.me;
+                if (state.me) $('me-name').textContent = state.me.name;
+            }
+
+            function renderAdmin() {
+                const on = !!state.adminKey;
+                $('admin-panel').hidden = !on;
+                $('admin-toggle').parentElement.hidden = on;
+                if (!on) return;
+                const levels = [...new Set(state.roster.map(p => p.level).filter(Boolean))].sort();
+                $('level-options').innerHTML = levels.map(l => '<option value="' + esc(l) + '">').join('');
+                const sorted = state.roster.slice().sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name));
+                $('roster-body').innerHTML = sorted.map(p =>
+                    '<tr data-id="' + esc(p.id) + '">' +
+                    '<td><input type="text" data-field="name" value="' + esc(p.name) + '"></td>' +
+                    '<td><input type="email" data-field="email" value="' + esc(p.email) + '"></td>' +
+                    '<td><select data-field="role">' +
+                        '<option value="student"' + (p.role === 'student' ? ' selected' : '') + '>Student</option>' +
+                        '<option value="instructor"' + (p.role === 'instructor' ? ' selected' : '') + '>Instructor</option>' +
+                    '</select></td>' +
+                    '<td><input type="text" data-field="level" list="level-options" value="' + esc(p.level) + '"' + (p.role === 'instructor' ? ' disabled' : '') + '></td>' +
+                    '<td><button type="button" class="avail-remove" data-remove="' + esc(p.id) + '">Remove</button></td>' +
+                    '</tr>'
+                ).join('') || '<tr><td colspan="5" class="avail-empty">Nobody on the roster yet.</td></tr>';
+            }
+
+            /* ---------- Data ---------- */
+
+            async function refresh() {
+                try {
+                    const data = await api({ action: 'data' });
+                    state.people = data.people;
+                    state.events = data.events;
+                    state.availability = data.availability;
+                    // Keep "me" in sync with any name changes
+                    if (state.me) {
+                        const fresh = state.people.find(p => p.id === state.me.id);
+                        if (fresh) state.me = fresh; else logout();
+                    }
+                    renderMe();
+                    renderGrid();
+                } catch (err) {
+                    $('grid').innerHTML = '<p class="avail-loading">Could not load availability: ' + esc(err.message) + '</p>';
+                }
+            }
+
+            async function login(email, quiet) {
+                try {
+                    const data = await api({ action: 'whoami', email: email });
+                    state.me = data.person;
+                    store('bhAvailEmail', email);
+                    showMessage('');
+                    renderMe();
+                    renderGrid();
+                } catch (err) {
+                    store('bhAvailEmail', '');
+                    if (!quiet) showMessage(err.message, true);
+                }
+            }
+
+            function logout() {
+                state.me = null;
+                store('bhAvailEmail', '');
+                renderMe();
+                renderGrid();
+            }
+
+            async function loadRoster(key) {
+                const data = await api({ action: 'adminData', adminKey: key }, true);
+                state.adminKey = key;
+                state.roster = data.people;
+                store('bhAvailAdmin', key);
+                renderAdmin();
+                renderGrid();
+            }
+
+            async function adminCall(params) {
+                try {
+                    const data = await api(Object.assign({ adminKey: state.adminKey }, params), true);
+                    state.roster = data.people;
+                    renderAdmin();
+                    refresh();
+                } catch (err) {
+                    alertAdmin(err.message);
+                }
+            }
+
+            function alertAdmin(text) {
+                showMessage(text, true);
+                $('message').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            /* ---------- Events ---------- */
+
+            $('grid').addEventListener('click', async e => {
+                const btn = e.target.closest('button.avail-cell');
+                if (!btn) return;
+                const personId = btn.dataset.person, eventKey = btn.dataset.event;
+                const prev = statusOf(personId, eventKey);
+                const next = CYCLE[(CYCLE.indexOf(prev) + 1) % CYCLE.length];
+                const map = state.availability[eventKey] = state.availability[eventKey] || {};
+                if (next) map[personId] = next; else delete map[personId];
+                renderGrid();
+                const params = { action: 'setStatus', eventKey: eventKey, status: next };
+                if (state.me && state.me.id === personId) params.email = load('bhAvailEmail');
+                else Object.assign(params, { personId: personId, adminKey: state.adminKey });
+                try {
+                    await api(params, true);
+                } catch (err) {
+                    if (prev) map[personId] = prev; else delete map[personId];
+                    renderGrid();
+                    showMessage('Could not save: ' + err.message, true);
+                }
+            });
+
+            $('login-form').addEventListener('submit', e => {
+                e.preventDefault();
+                login($('email-input').value.trim());
+            });
+            $('logout-button').addEventListener('click', logout);
+
+            $('admin-toggle').addEventListener('click', () => {
+                $('admin-login').hidden = !$('admin-login').hidden;
+                if (!$('admin-login').hidden) $('admin-key').focus();
+            });
+            $('admin-login').addEventListener('submit', async e => {
+                e.preventDefault();
+                try {
+                    await loadRoster($('admin-key').value);
+                    $('admin-login').hidden = true;
+                    $('admin-key').value = '';
+                    showMessage('');
+                } catch (err) {
+                    alertAdmin(err.message);
+                }
+            });
+            $('admin-logout').addEventListener('click', () => {
+                state.adminKey = '';
+                state.roster = [];
+                store('bhAvailAdmin', '');
+                renderAdmin();
+                renderGrid();
+            });
+
+            $('add-role').addEventListener('change', () => {
+                $('add-level').disabled = $('add-role').value === 'instructor';
+            });
+            $('add-form').addEventListener('submit', async e => {
+                e.preventDefault();
+                await adminCall({
+                    action: 'addPerson',
+                    name: $('add-name').value,
+                    email: $('add-email').value,
+                    role: $('add-role').value,
+                    level: $('add-role').value === 'student' ? $('add-level').value : ''
+                });
+                $('add-form').reset();
+                $('add-level').disabled = false;
+                $('add-name').focus();
+            });
+
+            $('roster-body').addEventListener('change', e => {
+                const field = e.target.dataset.field;
+                if (!field) return;
+                const id = e.target.closest('tr').dataset.id;
+                adminCall({ action: 'updatePerson', id: id, [field]: e.target.value });
+            });
+            $('roster-body').addEventListener('click', e => {
+                const id = e.target.dataset.remove;
+                if (!id) return;
+                const p = state.roster.find(r => r.id === id);
+                if (confirm('Remove ' + (p ? p.name : 'this person') + ' and their availability?')) {
+                    adminCall({ action: 'removePerson', id: id });
+                }
+            });
+
+            /* ---------- Start ---------- */
+
+            let started = false;
+            async function start() {
+                if (started) return;
+                started = true;
+                if (!API_URL || API_URL.indexOf('PASTE_') === 0) {
+                    $('grid').innerHTML = '<p class="avail-loading">Setup needed: add the Google Apps Script URL to availability.html (see availability-backend/README.md).</p>';
+                    return;
+                }
+                const email = load('bhAvailEmail');
+                const key = load('bhAvailAdmin');
+                await refresh();
+                if (email) login(email, true);
+                if (key) loadRoster(key).catch(() => store('bhAvailAdmin', ''));
+            }
+            window.addEventListener('page-unlocked', start);
+        })();
+    </script>
+</body>
+</html>
