@@ -14,6 +14,152 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/fav/favicon-16x16.png">
     <link rel="manifest" href="/fav/site.webmanifest">
     <link rel="icon" href="/fav/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* Speed-adjustable recording players (experimental copy of tunes.html) */
+        .player-head {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .player-toggle {
+            flex: 0 0 auto;
+            width: 2.25rem;
+            height: 2.25rem;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: filter 0.2s ease, transform 0.1s ease;
+        }
+
+        .player-toggle:hover { filter: brightness(0.88); }
+        .player-toggle:active { transform: scale(0.94); }
+        .player-toggle:focus-visible {
+            outline: 3px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        .player-toggle svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .player-toggle .icon-pause,
+        .player.is-playing .player-toggle .icon-play { display: none; }
+        .player.is-playing .player-toggle .icon-pause { display: block; }
+
+        .player.is-error .player-toggle {
+            background-color: #bbb;
+            cursor: not-allowed;
+        }
+
+        .player-title {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 0 0.75rem;
+        }
+
+        .player-time {
+            font-size: 0.8rem;
+            color: #777;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .player-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.15rem 1.25rem;
+            margin-top: 0.15rem;
+            padding-left: 3rem; /* line up under the tune name */
+        }
+
+        .player input[type="range"] {
+            accent-color: var(--primary-color);
+            cursor: pointer;
+            margin: 0;
+            height: 1.25rem;
+        }
+
+        .player-seek {
+            flex: 1 1 140px;
+            min-width: 80px;
+        }
+
+        .player-speed {
+            flex: 1 1 200px;
+            max-width: 280px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0 0.5rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .player-speed input[type="range"] {
+            flex: 1 1 80px;
+            min-width: 60px;
+        }
+
+        .player-rate {
+            min-width: 5.5em;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .player-rate span { white-space: nowrap; }
+        .player.is-adjusted .player-rate { color: var(--primary-color); }
+
+        /* Phones: stack the controls so 3-column tables still fit */
+        @media (max-width: 600px) {
+            .tunes-table td[data-player] { padding: 0.6rem 0.5rem; }
+            .player-head { flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+            .player-toggle { width: 2rem; height: 2rem; }
+            .player-title {
+                min-width: auto;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .player-controls {
+                padding-left: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.3rem;
+                margin-top: 0.4rem;
+            }
+            .player-speed {
+                display: block;
+                max-width: none;
+            }
+            .player-speed-label { display: none; }
+            /* small intrinsic width so sliders don't force the table wider, then fill the cell */
+            .player .player-seek,
+            .player .player-speed input[type="range"] {
+                display: block;
+                flex: none;
+                width: 50px;
+                min-width: 100%;
+            }
+            .player-rate {
+                display: block;
+                min-width: 0;
+                margin-top: 0.1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -159,7 +305,7 @@
                 <thead>
                     <tr>
                         <th>Music</th>
-                        <th><a href="tunes/4-4Set_90.mp3" target="_blank" style="color: white;">Chanter Recording (Full Set)</a></th>
+                        <th>Chanter Recording</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -174,6 +320,10 @@
                     <tr>
                         <td><a href="tunes/BonnieHoose.pdf" target="_blank">Bonnie Hoose of Airlie</a></td>
                         <td><a href="tunes/BonnieHoose_90.mp3" target="_blank">Bonnie Hoose of Airlie</a> (90bpm)</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><a href="tunes/4-4Set_90.mp3" target="_blank">Full Set</a> (90bpm)</td>
                     </tr>
                 </tbody>
             </table>
@@ -878,6 +1028,174 @@
             drumsButton.addEventListener('click', function() {
                 switchInstrument('drums');
             });
+        })();
+    </script>
+
+    <script>
+        // Speed-adjustable players for every chanter recording (0.5x to 2x, pitch preserved)
+        (function() {
+            // Slider positions: fine 0.05 steps below 1x, 0.1 steps above, so 1x sits in the middle
+            const RATES = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
+                           1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2];
+            const NORMAL = RATES.indexOf(1);
+            const ICONS = '<svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"/></svg>' +
+                          '<svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3.2v11H3.5zM9.3 2.5h3.2v11H9.3z"/></svg>';
+            let nowPlaying = null;
+
+            // Tick marks at 0.5x, 1x and 2x
+            const ticks = document.createElement('datalist');
+            ticks.id = 'speed-ticks';
+            [0, NORMAL, RATES.length - 1].forEach(function(i) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                ticks.appendChild(opt);
+            });
+            document.body.appendChild(ticks);
+
+            function formatTime(t) {
+                if (!isFinite(t)) return '0:00';
+                const m = Math.floor(t / 60);
+                const s = Math.floor(t % 60);
+                return m + ':' + String(s).padStart(2, '0');
+            }
+
+            // Tempo from file name (CD_70bpm.mp3, Wings_90.mp3) or cell text "(90bpm)"
+            function findBpm(href, text) {
+                const m = href.match(/(\d{2,3})_?bpm/i) ||
+                          href.match(/_(\d{2,3})\.mp3$/i) ||
+                          text.match(/(\d{2,3})\s*bpm/i);
+                return m ? parseInt(m[1], 10) : null;
+            }
+
+            function buildPlayer(link) {
+                const cell = link.closest('td');
+                if (!cell || cell.dataset.player) return;
+                cell.dataset.player = 'true';
+
+                const href = link.getAttribute('href');
+                const name = link.textContent.trim();
+                const bpm = findBpm(href, cell.textContent);
+
+                const audio = new Audio();
+                audio.preload = 'none';
+                audio.src = href;
+                audio.preservesPitch = true;
+                audio.mozPreservesPitch = true;
+                audio.webkitPreservesPitch = true;
+
+                // Build markup, keeping the original link (and any "(90bpm)" note) as the title
+                const player = document.createElement('div');
+                player.className = 'player';
+                player.innerHTML =
+                    '<div class="player-head">' +
+                        '<button type="button" class="player-toggle">' + ICONS + '</button>' +
+                        '<div class="player-title"><span class="player-name"></span><span class="player-time"></span></div>' +
+                    '</div>' +
+                    '<div class="player-controls">' +
+                        '<input type="range" class="player-seek" min="0" max="1000" step="1" value="0">' +
+                        '<label class="player-speed"><span class="player-speed-label">Speed</span>' +
+                            '<input type="range" min="0" max="' + (RATES.length - 1) + '" step="1" value="' + NORMAL + '" list="speed-ticks">' +
+                            '<output class="player-rate"><span class="rate-x"></span> <span class="rate-bpm"></span></output>' +
+                        '</label>' +
+                    '</div>';
+
+                const nameEl = player.querySelector('.player-name');
+                while (cell.firstChild) nameEl.appendChild(cell.firstChild);
+                cell.appendChild(player);
+
+                const toggle = player.querySelector('.player-toggle');
+                const timeEl = player.querySelector('.player-time');
+                const seek = player.querySelector('.player-seek');
+                const speed = player.querySelector('.player-speed input');
+                const rateX = player.querySelector('.rate-x');
+                const rateBpm = player.querySelector('.rate-bpm');
+                let dragging = false;
+
+                toggle.setAttribute('aria-label', 'Play ' + name);
+                seek.setAttribute('aria-label', 'Position in ' + name);
+                speed.setAttribute('aria-label', 'Playback speed for ' + name);
+                speed.title = 'Drag to change speed (0.5× to 2×). Double-click to reset to 1×.';
+
+                function currentRate() {
+                    return RATES[parseInt(speed.value, 10)];
+                }
+
+                function applyRate() {
+                    const rate = currentRate();
+                    audio.defaultPlaybackRate = rate;
+                    audio.playbackRate = rate;
+                    rateX.textContent = rate + '×';
+                    rateBpm.textContent = bpm ? '· ' + Math.round(bpm * rate) + ' bpm' : '';
+                    speed.setAttribute('aria-valuetext', rate + '×' + (bpm ? ', ' + Math.round(bpm * rate) + ' bpm' : ''));
+                    player.classList.toggle('is-adjusted', rate !== 1);
+                }
+
+                function updateTime() {
+                    const d = audio.duration;
+                    if (isFinite(d) && d > 0) {
+                        timeEl.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(d);
+                        if (!dragging) seek.value = Math.round(audio.currentTime / d * 1000);
+                    }
+                }
+
+                toggle.addEventListener('click', function() {
+                    if (player.classList.contains('is-error')) return;
+                    if (audio.paused) {
+                        if (nowPlaying && nowPlaying !== audio) nowPlaying.pause();
+                        applyRate();
+                        audio.play().catch(function() {});
+                    } else {
+                        audio.pause();
+                    }
+                });
+
+                audio.addEventListener('play', function() {
+                    nowPlaying = audio;
+                    audio.playbackRate = currentRate();
+                    player.classList.add('is-playing');
+                    toggle.setAttribute('aria-label', 'Pause ' + name);
+                });
+                audio.addEventListener('pause', function() {
+                    player.classList.remove('is-playing');
+                    toggle.setAttribute('aria-label', 'Play ' + name);
+                });
+                audio.addEventListener('loadedmetadata', function() {
+                    audio.playbackRate = currentRate();
+                    updateTime();
+                });
+                audio.addEventListener('timeupdate', updateTime);
+                audio.addEventListener('ended', function() {
+                    seek.value = 1000;
+                });
+                audio.addEventListener('error', function() {
+                    player.classList.add('is-error');
+                    player.classList.remove('is-playing');
+                    toggle.setAttribute('aria-label', name + ' (recording unavailable)');
+                    timeEl.textContent = 'unavailable';
+                });
+
+                seek.addEventListener('pointerdown', function() { dragging = true; });
+                seek.addEventListener('input', function() {
+                    const d = audio.duration;
+                    if (isFinite(d) && d > 0) {
+                        audio.currentTime = seek.value / 1000 * d;
+                        timeEl.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(d);
+                    } else {
+                        seek.value = 0;
+                    }
+                });
+                seek.addEventListener('change', function() { dragging = false; });
+
+                speed.addEventListener('input', applyRate);
+                speed.addEventListener('dblclick', function() {
+                    speed.value = NORMAL;
+                    applyRate();
+                });
+
+                applyRate();
+            }
+
+            document.querySelectorAll('.tunes-table a[href$=".mp3"]').forEach(buildPlayer);
         })();
     </script>
 </body>
