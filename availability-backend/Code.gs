@@ -17,6 +17,13 @@ const VALID_INSTRUMENTS = ['piper', 'snare', 'tenor', 'bass', 'drum major'];
 const LESSON_SUFFIX = '#lesson'; // each practice also has a lesson slot, keyed as <practice key>#lesson
 const AVAIL_HEADERS = ['personId', 'eventKey', 'status', 'updated'];
 
+// One-off polls (e.g. potluck.html) that aren't on the band calendar.
+// Poll answers are stored in the Availability tab with eventKey "poll:<pollId>/<optionId>".
+// Anyone on the roster can answer. Ids are lowercase letters, numbers, and dashes.
+const POLL_PREFIX = 'poll:';
+const POLL_ID_RE = /^[a-z0-9-]{1,40}$/;
+const POLL_KEY_RE = /^poll:[a-z0-9-]{1,40}\/[a-z0-9-]{1,40}$/;
+
 /* ---------- Web entry points ---------- */
 
 function doGet(e) {
@@ -37,6 +44,7 @@ function handle_(p) {
   try {
     switch (p.action) {
       case 'data':         return getData_();
+      case 'pollData':     return getPollData_(p.pollId);
       case 'whoami':       return whoami_(p.email);
       case 'setStatus':    return withLock_(() => setStatus_(p));
       case 'adminData':    requireAdmin_(p); return getAdminData_();
@@ -67,6 +75,19 @@ function getData_() {
   });
 
   return { people: publicPeople_(), events: events, availability: availability };
+}
+
+function getPollData_(pollId) {
+  const id = String(pollId || '');
+  if (!POLL_ID_RE.test(id)) throw new Error('Invalid poll.');
+  const prefix = POLL_PREFIX + id + '/';
+  const availability = {};
+  readRows_(sheet_('Availability', AVAIL_HEADERS)).forEach(r => {
+    const key = String(r.eventKey);
+    if (key.indexOf(prefix) !== 0 || VALID_STATUS.indexOf(r.status) === -1) return;
+    (availability[key] = availability[key] || {})[r.personId] = r.status;
+  });
+  return { people: publicPeople_(), availability: availability };
 }
 
 function getAdminData_() {
@@ -112,17 +133,22 @@ function setStatus_(p) {
   if (!person) throw new Error('Person not found.');
   if (!p.eventKey) throw new Error('Missing event.');
   const key = String(p.eventKey);
-  const isLesson = key.slice(-LESSON_SUFFIX.length) === LESSON_SUFFIX;
-  const cal = CalendarApp.getCalendarById(CALENDAR_ID);
-  const ev = cal && cal.getEventById(key.split('|')[0]);
-  if (!ev) throw new Error('Event not found.');
-  const type = eventType_(ev.getTitle());
-  const who = cleanPerson_(person);
-  if (isLesson) {
-    if (type !== 'practice') throw new Error('Event not found.');
-    if (!(who.role === 'student' || who.instructor)) throw new Error('Only students and instructors mark lessons.');
-  } else if (!who.member) {
-    throw new Error('Only band members can mark ' + (type === 'practice' ? 'practices.' : 'performances.'));
+  if (key.indexOf(POLL_PREFIX) === 0) {
+    // Poll option: anyone on the roster can answer.
+    if (!POLL_KEY_RE.test(key)) throw new Error('Invalid poll option.');
+  } else {
+    const isLesson = key.slice(-LESSON_SUFFIX.length) === LESSON_SUFFIX;
+    const cal = CalendarApp.getCalendarById(CALENDAR_ID);
+    const ev = cal && cal.getEventById(key.split('|')[0]);
+    if (!ev) throw new Error('Event not found.');
+    const type = eventType_(ev.getTitle());
+    const who = cleanPerson_(person);
+    if (isLesson) {
+      if (type !== 'practice') throw new Error('Event not found.');
+      if (!(who.role === 'student' || who.instructor)) throw new Error('Only students and instructors mark lessons.');
+    } else if (!who.member) {
+      throw new Error('Only band members can mark ' + (type === 'practice' ? 'practices.' : 'performances.'));
+    }
   }
   const status = String(p.status || '');
   if (status && VALID_STATUS.indexOf(status) === -1) throw new Error('Invalid status.');

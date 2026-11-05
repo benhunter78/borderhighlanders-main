@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Band Potluck - Border Highlanders Pipes & Drums</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/fav/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/fav/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/fav/favicon-16x16.png">
+    <link rel="manifest" href="/fav/site.webmanifest">
+    <link rel="icon" href="/fav/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* Potluck poll: standalone page, not linked from the rest of the site */
+        .page-potluck .hero h1 {
+            font-size: 2rem;
+            line-height: 1.3;
+        }
+
+        .potluck-options {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .potluck-options li {
+            background: white;
+            border-left: 4px solid var(--accent-color);
+            border-radius: 5px;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .potluck-option-num {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+        }
+
+        .potluck-option-place {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .potluck-options a {
+            color: var(--primary-color);
+        }
+
+        .page-potluck .avail-section-body {
+            border-top: 2px solid var(--primary-color);
+            border-radius: 8px;
+        }
+
+        .page-potluck .avail-event {
+            min-width: 120px;
+            max-width: 200px;
+        }
+
+        .page-potluck .avail-title {
+            white-space: normal;
+        }
+
+        .potluck-admin-bar {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .page-potluck .hero h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="page-availability page-potluck">
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="calendar.html">Calendar</a></li>
+            <li><a href="moscow-burns-night.html">Moscow Burns Night</a></li>
+            <li><a href="join.html">Join</a></li>
+            <li><a href="tunes.html">Tunes</a></li>
+            <li><a href="availability.html">Availability</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <img src="images/CrestSquareTransparent.png" alt="Border Highlanders Crest" class="hero-logo">
+            <div class="hero-text">
+                <h1>Availability for band potluck on Tuesday, November 17, 5:30-ish start</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="password-prompt" id="password-prompt">
+        <div class="container">
+            <h2>This page is password protected</h2>
+            <p>Please enter the band password to see and update availability.</p>
+            <form class="password-form" id="password-form">
+                <input type="password" id="password-input" placeholder="Enter password" autocomplete="off">
+                <button type="submit">Continue</button>
+                <p class="password-error" id="password-error" style="display: none;">Incorrect password. Please try again.</p>
+            </form>
+        </div>
+    </div>
+
+    <div class="tunes-protected" id="tunes-content">
+        <div class="container">
+            <div class="tunes-section">
+                <h2>Who's Available?</h2>
+                <p class="avail-intro">We have two options for the potluck. Enter your email to mark yourself, then tap a cell to cycle through <strong>Yes</strong>, <strong>Maybe</strong>, <strong>No</strong>, and blank. Please mark both options.</p>
+
+                <ul class="potluck-options" id="option-list"></ul>
+
+                <form class="avail-login" id="login-form">
+                    <input type="email" id="email-input" placeholder="Your email address" autocomplete="email" required>
+                    <button type="submit">That's me</button>
+                </form>
+                <div class="avail-me" id="me-bar" hidden>
+                    Marking availability as <strong id="me-name"></strong>
+                    <button type="button" class="avail-link-button" id="logout-button">Not you?</button>
+                </div>
+                <p class="potluck-admin-bar" id="admin-bar" hidden>
+                    Admin mode: you can mark anyone.
+                    <button type="button" class="avail-link-button" id="admin-logout">Leave admin mode</button>
+                </p>
+                <p class="avail-message" id="message" hidden></p>
+
+                <div class="avail-legend" aria-hidden="true">
+                    <span><span class="avail-cell yes">&#10003;</span> Yes</span>
+                    <span><span class="avail-cell maybe">?</span> Maybe</span>
+                    <span><span class="avail-cell no">&#10007;</span> No</span>
+                </div>
+
+                <div class="avail-section-body">
+                    <div class="avail-table-wrap" id="poll-grid">
+                        <p class="avail-loading">Loading&hellip;</p>
+                    </div>
+                </div>
+            </div>
+
+            <form class="avail-admin-login" id="admin-login" hidden>
+                <input type="password" id="admin-key" placeholder="Admin key" autocomplete="off">
+                <button type="submit">Unlock admin</button>
+            </form>
+            <p class="avail-admin-toggle"><button type="button" class="avail-link-button" id="admin-toggle">Admin</button></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Border Highlanders Pipes & Drums</p>
+        <p>Scottish Highland piping and drumming on the Palouse since 1974</p>
+        <a href="#" id="vandalize-link" class="vandalize-link">Vandalize this page!</a>
+    </footer>
+    <script src="script.js"></script>
+    <script>
+        // Page password (same password and saved login as the Tunes and Availability pages)
+        (function() {
+            const CORRECT_PASSWORD = 'MoscowPullman';
+            const AUTH_KEY = 'tunesAuth';
+            const EXPIRY_DAYS = 30;
+
+            function checkAuth() {
+                try {
+                    const { timestamp } = JSON.parse(localStorage.getItem(AUTH_KEY));
+                    if (Date.now() - timestamp < EXPIRY_DAYS * 24 * 60 * 60 * 1000) return true;
+                } catch (e) {}
+                try { localStorage.removeItem(AUTH_KEY); } catch (e) {}
+                return false;
+            }
+
+            function unlockPage() {
+                document.getElementById('password-prompt').style.display = 'none';
+                document.getElementById('tunes-content').classList.add('unlocked');
+                try { localStorage.setItem(AUTH_KEY, JSON.stringify({ timestamp: Date.now() })); } catch (e) {}
+                window.dispatchEvent(new Event('page-unlocked'));
+            }
+
+            document.getElementById('password-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (document.getElementById('password-input').value === CORRECT_PASSWORD) {
+                    unlockPage();
+                } else {
+                    document.getElementById('password-error').style.display = 'block';
+                    document.getElementById('password-input').value = '';
+                    document.getElementById('password-input').focus();
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', function() {
+                if (checkAuth()) unlockPage();
+                else document.getElementById('password-input').focus();
+            });
+        })();
+
+        // Potluck poll (uses the Availability roster and backend; see availability-backend/README.md)
+        (function() {
+            const API_URL = 'https://script.google.com/macros/s/AKfycbxhyl4tg7rLEfNOBjWlhK-I93guZumr81XuGRv7lQ46uAOrfPxmhpLw382ZgU896JULfA/exec';
+            const POLL_ID = 'potluck-2026-11-17';
+            const OPTIONS = [
+                { id: 'moscow-shelley-mark', place: 'Moscow', detail: "at Shelley and Mark's" },
+                { id: 'troy-jay', place: 'Troy', detail: "at Jay's", address: '1695 Little Bear Ridge, Troy',
+                  map: 'https://www.google.com/maps/search/?api=1&query=1695+Little+Bear+Ridge%2C+Troy%2C+ID' }
+            ].map((o, i) => Object.assign({ key: 'poll:' + POLL_ID + '/' + o.id, num: 'Option ' + (i + 1) }, o));
+
+            const CYCLE = ['', 'yes', 'maybe', 'no'];
+            const SYMBOL = { yes: '✓', maybe: '?', no: '✗', '': '' };
+            const LABEL = { yes: 'Yes', maybe: 'Maybe', no: 'No', '': 'Not set' };
+            const state = { people: [], availability: {}, me: null, adminKey: '' };
+            const $ = id => document.getElementById(id);
+
+            function store(key, value) {
+                try { value ? localStorage.setItem(key, value) : localStorage.removeItem(key); } catch (e) {}
+            }
+            function load(key) {
+                try { return localStorage.getItem(key) || ''; } catch (e) { return ''; }
+            }
+            function esc(s) {
+                return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            }
+            function showMessage(text, isError) {
+                const el = $('message');
+                el.textContent = text || '';
+                el.hidden = !text;
+                el.classList.toggle('error', !!isError);
+            }
+
+            async function api(params, post) {
+                let res;
+                if (post) {
+                    res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(params)
+                    });
+                } else {
+                    res = await fetch(API_URL + '?' + new URLSearchParams(params));
+                }
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                return data;
+            }
+
+            /* ---------- Rendering ---------- */
+
+            function renderOptions() {
+                $('option-list').innerHTML = OPTIONS.map(o =>
+                    '<li><span class="potluck-option-num">' + esc(o.num) + '</span>' +
+                    '<span class="potluck-option-place">' + esc(o.place) + '</span>' +
+                    esc(o.detail) +
+                    (o.address ? ', ' + (o.map ? '<a href="' + esc(o.map) + '" target="_blank" rel="noopener">' + esc(o.address) + '</a>' : esc(o.address)) : '') +
+                    '</li>'
+                ).join('');
+            }
+
+            function optionHeader(o) {
+                return '<th class="avail-event" title="' + esc(o.place + ' ' + o.detail) + '">' +
+                    '<span class="avail-dow">' + esc(o.num) + '</span>' +
+                    '<span class="avail-date">' + esc(o.place) + '</span>' +
+                    '<span class="avail-title">' + esc(o.detail) + '</span></th>';
+            }
+
+            function statusOf(personId, key) {
+                return (state.availability[key] || {})[personId] || '';
+            }
+
+            function canEdit(p) {
+                return !!state.adminKey || (!!state.me && state.me.id === p.id);
+            }
+
+            function personRow(p) {
+                const mine = state.me && state.me.id === p.id;
+                let html = '<tr class="' + (mine ? 'avail-mine' : '') + '">' +
+                    '<th scope="row" class="avail-name">' + esc(p.name) + '</th>';
+                OPTIONS.forEach(o => {
+                    const s = statusOf(p.id, o.key);
+                    const label = p.name + ', ' + o.place + ': ' + LABEL[s];
+                    html += '<td>' + (canEdit(p)
+                        ? '<button type="button" class="avail-cell editable ' + s + '" data-person="' + esc(p.id) + '" data-event="' + esc(o.key) + '" aria-label="' + esc(label) + '">' + SYMBOL[s] + '</button>'
+                        : '<span class="avail-cell ' + s + '" title="' + esc(LABEL[s]) + '" aria-label="' + esc(label) + '">' + SYMBOL[s] + '</span>') +
+                        '</td>';
+                });
+                return html + '</tr>';
+            }
+
+            function countRow(label, group, extraClass) {
+                let html = '<tr class="avail-count' + (extraClass ? ' ' + extraClass : '') + '"><th scope="row">' + label + '</th>';
+                OPTIONS.forEach(o => {
+                    let yes = 0, maybe = 0;
+                    group.forEach(p => {
+                        const s = statusOf(p.id, o.key);
+                        if (s === 'yes') yes++;
+                        if (s === 'maybe') maybe++;
+                    });
+                    html += '<td>' + yes + (maybe ? ' <span class="avail-maybe-count">+' + maybe + '?</span>' : '') + '</td>';
+                });
+                return html + '</tr>';
+            }
+
+            function renderGrid() {
+                const byName = (a, b) => a.name.localeCompare(b.name);
+                const groups = [
+                    { label: 'Band Members', countLabel: 'Band members available', people: state.people.filter(p => p.role === 'member').sort(byName) },
+                    { label: 'Students', countLabel: 'Students available', people: state.people.filter(p => p.role !== 'member').sort(byName) }
+                ].filter(g => g.people.length);
+                const span = OPTIONS.length + 1;
+                let html = '<table class="tunes-table avail-grid"><thead><tr><th class="avail-corner">Name</th>' +
+                    OPTIONS.map(optionHeader).join('') + '</tr></thead><tbody>';
+                if (!groups.length) html += '<tr><td colspan="' + span + '" class="avail-empty">Nobody yet</td></tr>';
+                groups.forEach(g => {
+                    html += '<tr class="avail-group"><th colspan="' + span + '">' + g.label + '</th></tr>';
+                    html += g.people.map(personRow).join('');
+                });
+                html += '</tbody><tfoot><tr class="avail-count-heading"><th colspan="' + span + '">Number available</th></tr>' +
+                    groups.map(g => countRow(g.countLabel, g.people)).join('');
+                if (groups.length > 1) html += countRow('Total available', state.people, 'avail-total');
+                $('poll-grid').innerHTML = html + '</tfoot></table>';
+            }
+
+            function renderMe() {
+                $('login-form').hidden = !!state.me;
+                $('me-bar').hidden = !state.me;
+                if (state.me) $('me-name').textContent = state.me.name;
+            }
+
+            function renderAdmin() {
+                const on = !!state.adminKey;
+                $('admin-bar').hidden = !on;
+                $('admin-toggle').parentElement.hidden = on;
+                if (on) $('admin-login').hidden = true;
+            }
+
+            /* ---------- Data ---------- */
+
+            async function refresh() {
+                try {
+                    const data = await api({ action: 'pollData', pollId: POLL_ID });
+                    state.people = data.people;
+                    state.availability = data.availability;
+                    if (state.me) {
+                        const fresh = state.people.find(p => p.id === state.me.id);
+                        if (fresh) state.me = fresh; else logout();
+                    }
+                    renderMe();
+                    renderGrid();
+                } catch (err) {
+                    const msg = err.message === 'Unknown action'
+                        ? 'The availability backend needs the latest Code.gs (see availability-backend/README.md).'
+                        : err.message;
+                    $('poll-grid').innerHTML = '<p class="avail-loading">Could not load availability: ' + esc(msg) + '</p>';
+                }
+            }
+
+            async function login(email, quiet) {
+                try {
+                    const data = await api({ action: 'whoami', email: email });
+                    state.me = data.person;
+                    store('bhAvailEmail', email);
+                    showMessage('');
+                    renderMe();
+                    renderGrid();
+                } catch (err) {
+                    store('bhAvailEmail', '');
+                    if (!quiet) showMessage(err.message, true);
+                }
+            }
+
+            function logout() {
+                state.me = null;
+                store('bhAvailEmail', '');
+                renderMe();
+                renderGrid();
+            }
+
+            async function unlockAdmin(key) {
+                await api({ action: 'adminData', adminKey: key }, true);
+                state.adminKey = key;
+                store('bhAvailAdmin', key);
+                renderAdmin();
+                renderGrid();
+            }
+
+            /* ---------- Events ---------- */
+
+            $('poll-grid').addEventListener('click', async e => {
+                const btn = e.target.closest('button.avail-cell');
+                if (!btn) return;
+                const personId = btn.dataset.person, key = btn.dataset.event;
+                const prev = statusOf(personId, key);
+                const next = CYCLE[(CYCLE.indexOf(prev) + 1) % CYCLE.length];
+                const map = state.availability[key] = state.availability[key] || {};
+                if (next) map[personId] = next; else delete map[personId];
+                renderGrid();
+                const params = { action: 'setStatus', eventKey: key, status: next };
+                if (state.me && state.me.id === personId) params.email = load('bhAvailEmail');
+                else Object.assign(params, { personId: personId, adminKey: state.adminKey });
+                try {
+                    await api(params, true);
+                } catch (err) {
+                    if (prev) map[personId] = prev; else delete map[personId];
+                    renderGrid();
+                    showMessage('Could not save: ' + err.message, true);
+                }
+            });
+
+            $('login-form').addEventListener('submit', e => {
+                e.preventDefault();
+                login($('email-input').value.trim());
+            });
+            $('logout-button').addEventListener('click', logout);
+
+            $('admin-toggle').addEventListener('click', () => {
+                $('admin-login').hidden = !$('admin-login').hidden;
+                if (!$('admin-login').hidden) $('admin-key').focus();
+            });
+            $('admin-login').addEventListener('submit', async e => {
+                e.preventDefault();
+                try {
+                    await unlockAdmin($('admin-key').value);
+                    $('admin-key').value = '';
+                    showMessage('');
+                } catch (err) {
+                    showMessage(err.message, true);
+                }
+            });
+            $('admin-logout').addEventListener('click', () => {
+                state.adminKey = '';
+                store('bhAvailAdmin', '');
+                renderAdmin();
+                renderGrid();
+            });
+
+            /* ---------- Start ---------- */
+
+            renderOptions();
+            let started = false;
+            async function start() {
+                if (started) return;
+                started = true;
+                const email = load('bhAvailEmail');
+                const key = load('bhAvailAdmin');
+                await refresh();
+                if (email) login(email, true);
+                if (key) unlockAdmin(key).catch(() => store('bhAvailAdmin', ''));
+            }
+            window.addEventListener('page-unlocked', start);
+        })();
+    </script>
+</body>
+</html>
